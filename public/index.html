@@ -262,6 +262,16 @@ footer p{margin:8px 0 0}
 .tip .tip-d{font-size:.9rem;opacity:.95}
 .tip .tip-go{margin-top:8px;justify-self:start;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.55);font-weight:800;font-size:.9rem}
 .tip-note{margin-top:8px}
+/* 내일 공개 예고: 남색 바탕 + 금색, 오늘 카드(주황)와 대비 */
+.tomorrow{margin-top:16px;padding:20px;border-radius:22px;background:linear-gradient(160deg,#1A2350 0%,#2C3A73 100%);color:#F4F1E8;display:grid;gap:10px;box-shadow:0 14px 30px -16px rgba(26,35,80,.7)}
+.tm-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.tm-lock{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:800;letter-spacing:.04em;padding:5px 12px;border-radius:999px;background:#E5C27C;color:#1A2350}
+.tm-cd{font-size:.8rem;opacity:.9}
+.tm-cd b{font-size:1rem;color:#E5C27C;font-variant-numeric:tabular-nums}
+.tm-hook{font-size:1.22rem;font-weight:800;line-height:1.4}
+.tm-sub,.tm-streak{margin:0;font-size:.86rem;line-height:1.55;opacity:.92}
+.tm-sub b,.tm-streak b{color:#E5C27C}
+.tm-btn{margin-top:4px;border:0;border-radius:14px;padding:15px;background:#E5C27C;color:#1A2350;font-weight:800;font-size:.98rem;cursor:pointer}
 /* 홈 화면 추가 */
 .install{display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center;margin-top:22px;padding:18px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
 .install img{width:56px;height:56px;border-radius:14px;box-shadow:0 4px 12px -4px rgba(20,26,46,.3)}
@@ -303,6 +313,7 @@ footer p{margin:8px 0 0}
 </div>
 <script src="/config.js"></script>
 <script src="/bank.js"></script>
+<script src="/money.js"></script>
 <script src="/app.js"></script>
 <script src="/install.js"></script>
 </body>

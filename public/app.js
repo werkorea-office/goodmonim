@@ -28,6 +28,18 @@ var TIPS={
  senior:{t:"내가 받을 수 있는 정부 혜택 확인",d:"보조금과 지원 서비스를 한 번에 찾아볼 수 있습니다.",site:"정부24",url:"https://www.gov.kr"},
  elder:{t:"어르신 복지 서비스 찾기",d:"기초연금, 돌봄, 일자리 지원 등을 확인해 보세요.",site:"복지로",url:"https://www.bokjiro.go.kr"}
 };
+/* ---------- 오늘의 돈 정보: 짝수 날=이달의 돈 달력, 홀수 날=숨은 돈 찾기 ---------- */
+var MONEY=window.GM_MONEY||{hidden:[],calendar:[]};
+function moneyOn(dayNum,gen){
+  var d=new Date(dayNum*864e5), month=d.getUTCMonth()+1;
+  var cal=MONEY.calendar.filter(function(c){ return c.m.indexOf(month)>=0 && c.gens.indexOf(gen)>=0; });
+  var H=MONEY.hidden; if(!H.length) return null;
+  if(cal.length && dayNum%2===0) return cal[Math.floor(dayNum/2)%cal.length];
+  return H[Math.floor(dayNum/2)%H.length];
+}
+function nextSame(item,fromDay,gen){ for(var k=1;k<=90;k++){ if(moneyOn(fromDay+k,gen)===item) return k; } return null; }
+function dayOfYear(){ var y=Date.UTC(DT.getUTCFullYear(),0,1); return Math.floor((Date.parse(TODAY)-y)/864e5)+1; }
+function untilMidnight(){ var now=Date.now()+9*3600e3, next=(Math.floor(now/864e5)+1)*864e5, m=Math.max(0,Math.floor((next-now)/60000)); return Math.floor(m/60)+"시간 "+(m%60)+"분"; }
 function tipFor(g){ return (g==="10대"||g==="20대")?TIPS.young:(g==="30대"||g==="40대")?TIPS.middle:(g==="50대"||g==="60대")?TIPS.senior:TIPS.elder; }
 
 /* ---------- 날짜 (한국 시간) ---------- */
@@ -269,9 +281,17 @@ function renderResult(){
   h+='<div class="section-title c-result"><h2>오늘의 결과</h2><span>Today’s Quiz</span></div><div class="panel c-result"><div class="score-row"><div><div class="score-cap">'+esc(dt[0])+'</div><div class="score-num">'+r.score+'<small> / '+r.total+'</small></div></div><div class="marks" aria-label="'+r.total+'문제 중 '+r.score+'개 정답">'+dots+'</div></div><p class="daytitle">'+esc(dt[1])+'</p>';
   h+='<ol class="review">'+set.qs.map(function(q,k){ var ok=r.oks[k]; return '<li class="'+(ok?'ok':'no')+'"><span class="mk">'+(ok?'O':'X')+'</span><span class="tx">'+esc(q.q)+'<em>정답: '+esc(q.o[q.a])+'</em></span><span class="rt" id="qr'+k+'"></span></li>'; }).join('')+'</ol></div>';
 
-  var tip=tipFor(S.gen);
-  h+='<a class="tip" href="'+tip.url+'" target="_blank" rel="noopener"><span class="tip-flag">오늘 놓치지 마세요</span><span class="tip-site">'+esc(tip.site)+' · 정부 공식 사이트</span><strong>'+esc(tip.t)+'</strong><span class="tip-d">'+esc(tip.d)+'</span><span class="tip-go">공식 사이트에서 확인하기 →</span></a><p class="note tip-note">굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. 이런 문자를 받으시면 열지 마세요.</p>';
-  if(window.GM_installCard) h+=window.GM_installCard();
+  var mo=moneyOn(DAY,S.gen)||tipFor(S.gen), tm=moneyOn(DAY+1,S.gen), again=tm?nextSame(tm,DAY+1,S.gen):null;
+  h+='<a class="tip" href="'+mo.url+'" target="_blank" rel="noopener"><span class="tip-flag">오늘의 돈 정보 · 올해 '+dayOfYear()+'번째</span><span class="tip-site">'+esc(mo.site)+' · 공식 사이트</span><strong>'+esc(mo.t)+'</strong><span class="tip-d">'+esc(mo.d)+'</span><span class="tip-go">공식 사이트에서 바로 확인하기 →</span></a><p class="note tip-note">조회는 모두 무료입니다. 굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. "수수료를 내면 찾아 준다"는 문자는 열지 마세요.</p>';
+  if(tm){
+    var canInstall=window.GM_installCard&&window.GM_installCard()!=="";
+    h+='<div class="tomorrow"><div class="tm-top"><span class="tm-lock"><svg width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1" y="7" width="12" height="8" rx="2" fill="currentColor"/><path d="M4 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>내일 아침 공개</span><span class="tm-cd">공개까지 <b id="tmCount">'+untilMidnight()+'</b></span></div>';
+    h+='<strong class="tm-hook">'+esc(tm.hook)+'</strong>';
+    h+='<p class="tm-sub">어디서, 어떻게 받는지는 <b>내일 아침 굿모님에서만</b> 열립니다.'+(again?' 놓치면 이 정보는 <b>'+again+'일 뒤</b>에야 다시 돌아옵니다.':'')+'</p>';
+    h+='<p class="tm-streak">내일 오시면 <b>연속 '+((S.streak||1)+1)+'일</b>째'+(((S.streak||1)+1)%7===0?' · 보호막 1개를 받습니다':'')+'</p>';
+    if(canInstall) h+='<button class="tm-btn" type="button" id="tmInstall">내일 아침 잊지 않게 바탕화면에 추가</button>';
+    h+='</div>';
+  }
   var days=Object.keys(S.done).length, si=stageIndex(days), nx=STAGES[si+1];
   h+='<div class="section-title c-tree"><h2>나의 아침 나무</h2><span>My Morning Tree</span></div><div class="panel c-tree"><div class="tree-wrap"><div id="treeBox">'+treeSVG(si)+'</div><div><div class="stage-en" id="stEn">'+STAGES[si].en+'</div><div class="stage-ko" id="stKo">'+STAGES[si].ko+'</div><div class="stage-sub">'+days+'일째 가꾸는 중'+(nx?' · '+esc(nx.ko)+'까지 '+(nx.d-days)+'일':' · 마지막 단계입니다')+'</div>'+(nx?'<div class="meter"><i style="width:'+Math.round((days-STAGES[si].d)/(nx.d-STAGES[si].d)*100)+'%"></i></div>':'')+'</div></div>';
   h+='<div class="ladder">'+STAGES.map(function(t,k){ return '<span class="'+(k<si?'done':k===si?'now':'')+'">'+t.d+'일 '+t.ko+'</span>'; }).join('')+'</div>';
@@ -293,7 +313,8 @@ function renderResult(){
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
-  if(window.GM_bindInstall) window.GM_bindInstall();
+  var ti=document.getElementById("tmInstall"); if(ti&&window.GM_openInstall) ti.addEventListener("click",window.GM_openInstall);
+  if(window.GM_tmTimer) clearInterval(window.GM_tmTimer); window.GM_tmTimer=setInterval(function(){ var c=document.getElementById("tmCount"); if(c) c.textContent=untilMidnight(); },30000);
   if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 뉴비(10·20대), 만렙(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
 
