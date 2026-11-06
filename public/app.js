@@ -28,14 +28,17 @@ var TIPS={
  senior:{t:"내가 받을 수 있는 정부 혜택 확인",d:"보조금과 지원 서비스를 한 번에 찾아볼 수 있습니다.",site:"정부24",url:"https://www.gov.kr"},
  elder:{t:"어르신 복지 서비스 찾기",d:"기초연금, 돌봄, 일자리 지원 등을 확인해 보세요.",site:"복지로",url:"https://www.bokjiro.go.kr"}
 };
-/* ---------- 오늘의 돈 정보: 짝수 날=이달의 돈 달력, 홀수 날=숨은 돈 찾기 ---------- */
-var MONEY=window.GM_MONEY||{hidden:[],calendar:[]};
+/* ---------- 오늘의 돈 정보: 3일 중 1일 공통 숨은 돈, 2일 세대 맞춤(이달 시기 정보 우선) ---------- */
+var MONEY=window.GM_MONEY||{hidden:[],calendar:[],gen:[]};
 function moneyOn(dayNum,gen){
-  var d=new Date(dayNum*864e5), month=d.getUTCMonth()+1;
-  var cal=MONEY.calendar.filter(function(c){ return c.m.indexOf(month)>=0 && c.gens.indexOf(gen)>=0; });
-  var H=MONEY.hidden; if(!H.length) return null;
-  if(cal.length && dayNum%2===0) return cal[Math.floor(dayNum/2)%cal.length];
-  return H[Math.floor(dayNum/2)%H.length];
+  var d=new Date(dayNum*864e5), month=d.getUTCMonth()+1, slot=dayNum%3, k=Math.floor(dayNum/3);
+  var H=MONEY.hidden||[]; if(!H.length) return null;
+  var cal=(MONEY.calendar||[]).filter(function(c){ return c.m.indexOf(month)>=0 && c.gens.indexOf(gen)>=0; });
+  var P=(MONEY.gen||[]).filter(function(c){ return c.gens.indexOf(gen)>=0; });
+  if(slot===0 || !P.length && !cal.length) return H[k%H.length];
+  if(slot===1 && cal.length) return cal[k%cal.length];
+  if(!P.length) return cal[k%cal.length];
+  return P[(k*2+(slot===2?1:0))%P.length];
 }
 function nextSame(item,fromDay,gen){ for(var k=1;k<=90;k++){ if(moneyOn(fromDay+k,gen)===item) return k; } return null; }
 function dayOfYear(){ var y=Date.UTC(DT.getUTCFullYear(),0,1); return Math.floor((Date.parse(TODAY)-y)/864e5)+1; }
