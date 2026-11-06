@@ -10,7 +10,7 @@ export async function onRequestGet({ request, env }){
   const leagues = currentLeagues(splits.map(s=>s.gen));
   // 세대별: 참여 인원 + 공통 5문제 정답 수 (추억 문제는 세대마다 달라서 리그 점수에서 뺍니다)
   const per = (await env.DB.prepare("SELECT plays.gen gen, COUNT(DISTINCT plays.device) n, SUM(j.value) ok, COUNT(j.value) cnt FROM plays, json_each(plays.oks) j WHERE plays.day=? AND CAST(j.key AS INTEGER)<5 GROUP BY plays.gen").bind(day).all()).results||[];
-  const L = leagues.map(l => { let n=0, ok=0, cnt=0; per.filter(p=>l.gens.includes(p.gen)).forEach(p=>{ n+=p.n; ok+=p.ok; cnt+=p.cnt; }); return {name:l.name, gens:l.gens, independent:l.independent, n, acc: cnt? ok/cnt : 0}; });
+  const L = leagues.map(l => { let n=0, ok=0, cnt=0; per.filter(p=>l.gens.includes(p.gen)).forEach(p=>{ n+=p.n; ok+=p.ok; cnt+=p.cnt; }); return {name:l.name, ages:l.ages, gens:l.gens, independent:l.independent, n, acc: cnt? ok/cnt : 0}; });
   const common = (await env.DB.prepare("SELECT CAST(j.key AS INTEGER) k, COUNT(*) n, SUM(j.value) ok FROM plays, json_each(plays.oks) j WHERE plays.day=? AND CAST(j.key AS INTEGER)<5 GROUP BY j.key").bind(day).all()).results||[];
   const bonus = await env.DB.prepare("SELECT COUNT(*) n, SUM(j.value) ok FROM plays, json_each(plays.oks) j WHERE plays.day=? AND plays.gen=? AND CAST(j.key AS INTEGER)=5").bind(day, gen).first();
   const q = [0,1,2,3,4].map(k => { const r = common.find(x=>x.k===k); return r ? {n:r.n, ok:r.ok} : null; });

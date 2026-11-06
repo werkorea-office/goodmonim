@@ -7,7 +7,9 @@ var BANK = window.GM_BANK, A=BANK.A, B=BANK.B, C=BANK.C, BONUS=BANK.BONUS, GENS=
 var PREVIEW = !!window.GM_FORCE_PREVIEW || /[?&]preview=1/.test(location.search);
 var MIN_SAMPLE = 30;
 
-var GEN_EN={"10대":"Teens","20대":"Twenties","30대":"Thirties","40대":"Forties","50대":"Fifties","60대":"Sixties","70대":"Seventies","80·90대":"Eighties & Nineties"};
+var GEN_EN={"10대":"Rising Stars","20대":"Challengers","30대":"Pioneers","40대":"Pillars","50대":"Veterans","60대":"Masters","70대":"Grandmasters","80·90대":"Legends"};
+var GEN_KO={"10대":"샛별","20대":"도전자","30대":"개척자","40대":"기둥","50대":"베테랑","60대":"명인","70대":"고수","80·90대":"전설"};
+function genFull(g){ return g+" "+(GEN_KO[g]||""); }
 var CAT_EN=["Proverbs","Spelling","Knowledge","Brain Math","Knowledge"];
 var CAT_KO=["속담·우리말","맞춤법","상식","두뇌 계산","상식"];
 var LINES=[
@@ -173,10 +175,10 @@ function renderGen(){
   h+='<div class="item"><span class="num">i</span><div><h3>매일 아침 5문제, 1분</h3><p>속담, 맞춤법, 상식, 두뇌 계산. 앱 설치도 회원가입도 없습니다.</p></div></div>';
   h+='<div class="item"><span class="num">ii</span><div><h3>연속 기록을 지켜 드립니다</h3><p>7일마다 보호막을 받고, 하루이틀 쉬어도 기록이 이어집니다.</p></div></div>';
   h+='<div class="item"><span class="num">iii</span><div><h3>나의 아침 나무가 자랍니다</h3><p>푼 날이 쌓일수록 씨앗이 새싹, 꽃나무, 큰 나무로 자랍니다.</p></div></div>';
-  h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>가까운 세대끼리 4개 리그로 겨루다가, 참여가 많아진 세대는 독립 리그로 나갑니다.</p></div></div>';
+  h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>샛별, 기둥, 명인, 전설 4개 리그로 겨루다가, 참여가 많아진 세대는 독립 리그로 나갑니다.</p></div></div>';
   h+='</div><div class="growrow" aria-label="나무가 자라는 모습">'+[0,1,4,6].map(function(k){ return '<figure>'+treeSVG(k)+'<figcaption>'+STAGES[k].ko+'</figcaption></figure>'; }).join('')+'</div></div>';
-  h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">오늘 우리 세대 순위에 함께 들어갑니다. 이름과 나이는 묻지 않습니다.</p><div class="gens">';
-  GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(g)+'</strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
+  h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">고른 세대의 리그에 함께 들어갑니다. 이름과 정확한 나이는 묻지 않습니다.</p><div class="gens">';
+  GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(g)+' · '+esc(GEN_KO[g])+'</strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
   app.innerHTML=h+'</div>';
   app.querySelectorAll(".gen").forEach(function(b){ b.addEventListener("click",function(){ S.gen=b.getAttribute("data-gen"); save(); run={i:0,picks:[],answered:false}; renderQuiz(); window.scrollTo(0,0); }); });
 }
@@ -229,17 +231,17 @@ function fillStats(){
   var mine=L.find(function(l){ return l.gens.indexOf(S.gen)>=0; });
   var open=L.filter(function(l){ return l.n>=MIN_SAMPLE; }).sort(function(a,b){ return b.acc-a.acc; });
   var h='';
-  if((STATS.newSplits||[]).indexOf(S.gen)>=0) h+='<div class="notice shield" style="margin-bottom:12px">'+shieldIcon(true)+'<div><strong>축하합니다! 이번 주부터 '+esc(S.gen)+' 독립 리그가 열렸습니다</strong>7일 연속 하루 '+MIN_SAMPLE+'명 넘게 참여해 주신 덕분입니다.</div></div>';
+  if((STATS.newSplits||[]).indexOf(S.gen)>=0) h+='<div class="notice shield" style="margin-bottom:12px">'+shieldIcon(true)+'<div><strong>축하합니다! 이번 주부터 '+esc(genFull(S.gen))+' 독립 리그가 열렸습니다</strong>7일 연속 하루 '+MIN_SAMPLE+'명 넘게 참여해 주신 덕분입니다.</div></div>';
   if(!open.length){
-    h+='<div class="pending"><b>'+total+'명</b>이 오늘 함께 풀었습니다.<br>리그마다 '+MIN_SAMPLE+'명이 모이면 순위를 공개합니다.'+(mine?' 지금 <strong>'+esc(mine.name)+' 리그</strong>는 '+mine.n+'명입니다.':'')+' 가족과 친구를 초대해 우리 리그 순위를 열어 보세요.</div>';
+    h+='<div class="pending"><b>'+total+'명</b>이 오늘 함께 풀었습니다.<br>리그마다 '+MIN_SAMPLE+'명이 모이면 순위를 공개합니다.'+(mine?' 지금 <strong>'+esc(mine.name)+' 리그('+esc(mine.ages)+')</strong>는 '+mine.n+'명입니다.':'')+' 가족과 친구를 초대해 우리 리그 순위를 열어 보세요.</div>';
   } else {
     h+='<div class="rank">';
-    open.forEach(function(x){ var me=mine&&x.name===mine.name, p=Math.round(x.acc*100); h+='<div class="row'+(me?' me':'')+'"><span>'+esc(x.name)+'<em class="tag">'+(x.independent?'독립 리그':x.gens.length>1?'통합 리그':'')+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+p+'%</span></div>'; });
+    open.forEach(function(x){ var me=mine&&x.name===mine.name, p=Math.round(x.acc*100); h+='<div class="row'+(me?' me':'')+'"><span>'+esc(x.name)+' 리그<em class="tag">'+esc(x.ages)+(x.independent?' · 독립':'')+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+p+'%</span></div>'; });
     h+='</div>';
-    if(mine&&mine.n<MIN_SAMPLE) h+='<p class="note">'+esc(mine.name)+' 리그는 지금 '+mine.n+'명입니다. '+MIN_SAMPLE+'명이 모이면 순위에 오릅니다.</p>';
+    if(mine&&mine.n<MIN_SAMPLE) h+='<p class="note">'+esc(mine.name)+' 리그('+esc(mine.ages)+')는 지금 '+mine.n+'명입니다. '+MIN_SAMPLE+'명이 모이면 순위에 오릅니다.</p>';
     h+='<p class="note">공통 5문제 평균 정답률 · 오늘 참여 '+total+'명</p>';
   }
-  h+='<p class="note">처음에는 가까운 세대끼리 4개 리그로 겨룹니다. 한 세대가 7일 연속 하루 '+MIN_SAMPLE+'명을 넘기면 다음 주 월요일부터 그 세대만의 독립 리그가 열립니다.</p>';
+  h+='<p class="note">처음에는 샛별(10·20대), 기둥(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 겨룹니다. 한 세대가 7일 연속 하루 '+MIN_SAMPLE+'명을 넘기면 다음 주 월요일부터 그 세대만의 독립 리그가 열립니다.</p>';
   box.innerHTML=h;
   (STATS.q||[]).forEach(function(rate,k){ var el=document.getElementById("qr"+k); if(el&&rate&&rate.n>=MIN_SAMPLE) el.textContent="정답률 "+Math.round(rate.ok/rate.n*100)+"%"; });
 }
@@ -248,7 +250,7 @@ function fillStats(){
 function okList(r){ return r.oks||[]; }
 function shareText(r){
   var m=okList(r).map(function(x){return x?"●":"○";}).join("");
-  return "Good Morning from GoodMonim\n"+EN_DATE+"\n\n오늘의 두뇌 퀴즈 "+m+" "+r.score+"/"+r.total+"\n"+(S.streak||1)+"-Day Streak · 연속 "+(S.streak||1)+"일째\n"+S.gen+" 대표 · Proudly for the "+GEN_EN[S.gen]+"\n\n"+LINE.en+"\n"+LINE.ko+"\n\n"+inviteUrl();
+  return "Good Morning from GoodMonim\n"+EN_DATE+"\n\n오늘의 두뇌 퀴즈 "+m+" "+r.score+"/"+r.total+"\n"+(S.streak||1)+"-Day Streak · 연속 "+(S.streak||1)+"일째\n"+genFull(S.gen)+" 대표 · Proudly playing for the "+GEN_EN[S.gen]+"\n\n"+LINE.en+"\n"+LINE.ko+"\n\n"+inviteUrl();
 }
 function inviteText(){ return "Good Morning\n오늘 아침, 두뇌 퀴즈 함께 풀어요.\nJoin me for today's morning quiz.\n\n5문제 · 1분 · 앱 설치 없이\n"+S.gen+" 대표로 참여 중입니다. 우리 세대에 힘을 보태 주세요.\n\n"+inviteUrl(); }
 var THEMES=[{id:"dawn",ko:"새벽",sw:"linear-gradient(135deg,#FFB79C,#B7A6F2)"},{id:"mist",ko:"아침 안개",sw:"linear-gradient(135deg,#DCEBFA,#F3E3F2)"},{id:"midnight",ko:"미드나잇",sw:"linear-gradient(135deg,#141C45,#5B3E95)"}];
@@ -290,7 +292,7 @@ function renderResult(){
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
-  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 10·20대, 30·40대, 50·60대, 70대 이상 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
+  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 샛별(10·20대), 기둥(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
 
   app.querySelectorAll(".kind").forEach(function(b){ b.addEventListener("click",function(){ S.kind=b.getAttribute("data-k"); save(); app.querySelectorAll(".kind").forEach(function(x){ x.setAttribute("aria-pressed",String(x===b)); }); setStatus(""); paint(); }); });
@@ -323,7 +325,7 @@ function shareNow(r){
   if(window.Kakao&&CFG.kakaoKey){
     try{
       if(!Kakao.isInitialized()) Kakao.init(CFG.kakaoKey);
-      Kakao.Share.sendDefault({objectType:"feed",content:{title:inv?"Good Morning · 오늘 아침, 함께 풀어요":"Good Morning · "+S.gen+" 대표 "+r.score+"/"+r.total+" · 연속 "+(S.streak||1)+"일",description:"5문제 · 1분 · 앱 설치 없이. 굿모님 아침 두뇌 퀴즈",imageUrl:SITE+"/og.jpg",link:{mobileWebUrl:url,webUrl:url}},buttons:[{title:"나도 풀어보기",link:{mobileWebUrl:url,webUrl:url}}]});
+      Kakao.Share.sendDefault({objectType:"feed",content:{title:inv?"Good Morning · 오늘 아침, 함께 풀어요":"Good Morning · "+genFull(S.gen)+" 대표 "+r.score+"/"+r.total+" · 연속 "+(S.streak||1)+"일",description:"5문제 · 1분 · 앱 설치 없이. 굿모님 아침 두뇌 퀴즈",imageUrl:SITE+"/og.jpg",link:{mobileWebUrl:url,webUrl:url}},buttons:[{title:"나도 풀어보기",link:{mobileWebUrl:url,webUrl:url}}]});
       return;
     }catch(e){}
   }
@@ -337,7 +339,7 @@ function shareNow(r){
 }
 
 /* ---------- 카드 그리기 ---------- */
-var fontsReady=null, KO_SAMPLE=LINES.map(function(l){return l.ko;}).join('')+GENS.join('')+'대표로 참여했습니다연속일째오늘아침함께풀어요지금순위위힘을보태주세요에서바로시작0123456789';
+var fontsReady=null, KO_SAMPLE=LINES.map(function(l){return l.ko;}).join('')+GENS.join('')+'샛별도전자개척자기둥베테랑명인고수전설'+'대표로 참여했습니다연속일째오늘아침함께풀어요지금순위위힘을보태주세요에서바로시작0123456789';
 function loadFonts(){
   if(fontsReady) return fontsReady;
   if(!(document.fonts&&document.fonts.load)) return (fontsReady=Promise.resolve());
@@ -371,7 +373,7 @@ function drawCard(r,theme){
     g.fillStyle=T.muted; g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"DAY STREAK",W-P,ry+62,5,"right");
     g.fillStyle=gold?T.gold:T.ink; g.font='600 170px "Cormorant Garamond", serif'; g.textAlign="right"; g.fillText(String(st),W-P,ry+222);
     g.font='italic 600 40px "Cormorant Garamond", serif'; g.fillText(streakTitle(st),W-P,ry+282);
-    g.textAlign="left"; g.fillStyle=T.ink; g.font='700 32px "Noto Serif KR", serif'; g.fillText(S.gen+" 대표로 참여했습니다",P,H-128);
+    g.textAlign="left"; g.fillStyle=T.ink; g.font='700 32px "Noto Serif KR", serif'; g.fillText(genFull(S.gen)+" 대표로 참여했습니다",P,H-128);
     g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("Proudly playing for the "+GEN_EN[S.gen],P,H-84);
     g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"GOODMONIM.CO.KR",W-P,H-128,4,"right");
     return c.toDataURL("image/png");
@@ -388,7 +390,7 @@ function drawInvite(theme){
     g.fillStyle=T.muted; g.font='italic 500 46px "Cormorant Garamond", serif'; g.fillText("Join me for today’s morning quiz.",P,650);
     var ry=730; g.strokeStyle=T.rule; g.lineWidth=1.5; g.beginPath(); g.moveTo(P,ry); g.lineTo(W-P,ry); g.stroke();
     [["5","Questions","오늘의 문제"],["1","Minute","걸리는 시간"],["0","Apps","설치할 앱"]].forEach(function(rw,i){ var x=P+i*300; g.fillStyle=T.ink; g.font='600 120px "Cormorant Garamond", serif'; g.fillText(rw[0],x,ry+150); var nw=g.measureText(rw[0]).width; g.font='italic 500 40px "Cormorant Garamond", serif'; g.fillText(rw[1],x+nw+12,ry+150); g.fillStyle=T.muted; g.font='500 28px "Noto Serif KR", serif'; g.fillText(rw[2],x,ry+200); });
-    g.fillStyle=T.ink; g.font='700 40px "Noto Serif KR", serif'; g.fillText(S.gen+" 대표가 보내는 아침 초대장",P,ry+310);
+    g.fillStyle=T.ink; g.font='700 40px "Noto Serif KR", serif'; g.fillText(genFull(S.gen)+" 대표가 보내는 아침 초대장",P,ry+310);
     pill(g,P,H-250,W-2*P,104,T.btn); g.fillStyle=T.btnInk; g.textAlign="center"; g.font='700 40px "IBM Plex Sans KR", sans-serif'; g.fillText("goodmonim.co.kr 에서 바로 시작",W/2,H-184);
     g.textAlign="left"; g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("With love, from the "+GEN_EN[S.gen],P,H-100);
     g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"GOODMONIM",W-P,H-102,6,"right");

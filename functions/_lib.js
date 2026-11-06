@@ -21,11 +21,12 @@ CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);`;
 }
 
 /* ---------- 리그: 처음엔 4개로 묶고, 커진 세대는 자동 독립 ---------- */
+export const GEN_TITLE = {"10대":"샛별","20대":"도전자","30대":"개척자","40대":"기둥","50대":"베테랑","60대":"명인","70대":"고수","80·90대":"전설"};
 export const LEAGUE_GROUPS = [
-  {name:"10·20대", gens:["10대","20대"]},
-  {name:"30·40대", gens:["30대","40대"]},
-  {name:"50·60대", gens:["50대","60대"]},
-  {name:"70대 이상", gens:["70대","80·90대"]}
+  {name:"샛별", ages:"10·20대", gens:["10대","20대"]},
+  {name:"기둥", ages:"30·40대", gens:["30대","40대"]},
+  {name:"명인", ages:"50·60대", gens:["50대","60대"]},
+  {name:"전설", ages:"70대 이상", gens:["70대","80·90대"]}
 ];
 export const SPLIT_MIN = 30;   // 하루 참여 기준
 export const SPLIT_DAYS = 7;   // 이 기준을 연속으로 채워야 하는 날 수
@@ -47,9 +48,10 @@ export async function evaluateSplits(env, day){
 export function currentLeagues(splitGens){
   const out = [];
   LEAGUE_GROUPS.forEach(g => {
+    g.gens.filter(x => splitGens.includes(x)).forEach(x => out.push({name:GEN_TITLE[x], ages:x, gens:[x], independent:true}));
     const rest = g.gens.filter(x => !splitGens.includes(x));
-    g.gens.filter(x => splitGens.includes(x)).forEach(x => out.push({name:x, gens:[x], independent:true}));
-    if(rest.length) out.push({name: rest.length===g.gens.length ? g.name : rest.join("·").replace("대·","·"), gens:rest, independent:false});
+    if(rest.length===g.gens.length) out.push({name:g.name, ages:g.ages, gens:rest, independent:false});
+    else if(rest.length) rest.forEach(x => out.push({name:GEN_TITLE[x], ages:x, gens:[x], independent:false}));
   });
   return out;
 }

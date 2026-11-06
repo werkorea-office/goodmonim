@@ -15,7 +15,7 @@ export async function onRequestGet({ request, env }){
   ]);
   const totals = await env.DB.prepare("SELECT COUNT(DISTINCT device) devices, COUNT(*) plays FROM plays").first();
   const splits = (await env.DB.prepare("SELECT gen, since FROM league_splits ORDER BY since").all()).results||[];
-  const leagues = currentLeagues(splits.map(s=>s.gen)).map(l=>l.name);
+  const leagues = currentLeagues(splits.map(s=>s.gen)).map(l=>l.name+" 리그("+l.ages+")");
   const genDays = await q("SELECT gen, day, COUNT(*) n FROM plays WHERE day>=? GROUP BY gen, day", shiftDay(t,-7));
   return json({ok:true, today:t, totals, plays, gens, events, invited, retention, firsts, splits, leagues, genDays});
 }
