@@ -7,8 +7,8 @@ var BANK = window.GM_BANK, A=BANK.A, B=BANK.B, C=BANK.C, BONUS=BANK.BONUS, GENS=
 var PREVIEW = !!window.GM_FORCE_PREVIEW || /[?&]preview=1/.test(location.search);
 var MIN_SAMPLE = 30;
 
-var GEN_EN={"10대":"Rising Stars","20대":"Challengers","30대":"Pioneers","40대":"Pillars","50대":"Veterans","60대":"Masters","70대":"Grandmasters","80·90대":"Legends"};
-var GEN_KO={"10대":"샛별","20대":"도전자","30대":"개척자","40대":"기둥","50대":"베테랑","60대":"명인","70대":"고수","80·90대":"전설"};
+var GEN_EN={"10대":"Newbies","20대":"Level-Ups","30대":"Almost Max","40대":"Max Level","50대":"Veterans","60대":"Masters","70대":"Grandmasters","80·90대":"Legends"};
+var GEN_KO={"10대":"뉴비","20대":"성장캐","30대":"만렙 직전","40대":"만렙","50대":"베테랑","60대":"명인","70대":"고수","80·90대":"전설"};
 function genFull(g){ return (GEN_KO[g]||"")+"("+g+")"; }
 var CAT_EN=["Proverbs","Spelling","Knowledge","Brain Math","Knowledge"];
 var CAT_KO=["속담·우리말","맞춤법","상식","두뇌 계산","상식"];
@@ -175,7 +175,7 @@ function renderGen(){
   h+='<div class="item"><span class="num">i</span><div><h3>매일 아침 5문제, 1분</h3><p>속담, 맞춤법, 상식, 두뇌 계산. 앱 설치도 회원가입도 없습니다.</p></div></div>';
   h+='<div class="item"><span class="num">ii</span><div><h3>연속 기록을 지켜 드립니다</h3><p>7일마다 보호막을 받고, 하루이틀 쉬어도 기록이 이어집니다.</p></div></div>';
   h+='<div class="item"><span class="num">iii</span><div><h3>나의 아침 나무가 자랍니다</h3><p>푼 날이 쌓일수록 씨앗이 새싹, 꽃나무, 큰 나무로 자랍니다.</p></div></div>';
-  h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>샛별, 기둥, 명인, 전설 4개 리그로 겨루다가, 참여가 많아진 세대는 독립 리그로 나갑니다.</p></div></div>';
+  h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>뉴비, 만렙, 명인, 전설 4개 리그로 겨루다가, 참여가 많아진 세대는 독립 리그로 나갑니다.</p></div></div>';
   h+='</div><div class="growrow" aria-label="나무가 자라는 모습">'+[0,1,4,6].map(function(k){ return '<figure>'+treeSVG(k)+'<figcaption>'+STAGES[k].ko+'</figcaption></figure>'; }).join('')+'</div></div>';
   h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">고른 세대의 리그에 함께 들어갑니다. 이름과 정확한 나이는 묻지 않습니다.</p><div class="gens">';
   GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(GEN_KO[g])+'<small>'+esc(g)+'</small></strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
@@ -241,7 +241,7 @@ function fillStats(){
     if(mine&&mine.n<MIN_SAMPLE) h+='<p class="note">'+esc(mine.name)+' 리그('+esc(mine.ages)+')는 지금 '+mine.n+'명입니다. '+MIN_SAMPLE+'명이 모이면 순위에 오릅니다.</p>';
     h+='<p class="note">공통 5문제 평균 정답률 · 오늘 참여 '+total+'명</p>';
   }
-  h+='<p class="note">처음에는 샛별(10·20대), 기둥(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 겨룹니다. 한 세대가 7일 연속 하루 '+MIN_SAMPLE+'명을 넘기면 다음 주 월요일부터 그 세대만의 독립 리그가 열립니다.</p>';
+  h+='<p class="note">처음에는 뉴비(10·20대), 만렙(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 겨룹니다. 한 세대가 7일 연속 하루 '+MIN_SAMPLE+'명을 넘기면 다음 주 월요일부터 그 세대만의 독립 리그가 열립니다.</p>';
   box.innerHTML=h;
   (STATS.q||[]).forEach(function(rate,k){ var el=document.getElementById("qr"+k); if(el&&rate&&rate.n>=MIN_SAMPLE) el.textContent="정답률 "+Math.round(rate.ok/rate.n*100)+"%"; });
 }
@@ -250,7 +250,7 @@ function fillStats(){
 function okList(r){ return r.oks||[]; }
 function shareText(r){
   var m=okList(r).map(function(x){return x?"●":"○";}).join("");
-  return "Good Morning from GoodMonim\n"+EN_DATE+"\n\n오늘의 두뇌 퀴즈 "+m+" "+r.score+"/"+r.total+"\n"+(S.streak||1)+"-Day Streak · 연속 "+(S.streak||1)+"일째\n"+genFull(S.gen)+" 대표 · Proudly playing for the "+GEN_EN[S.gen]+"\n\n"+LINE.en+"\n"+LINE.ko+"\n\n"+inviteUrl();
+  return "Good Morning from GoodMonim\n"+EN_DATE+"\n\n오늘의 두뇌 퀴즈 "+m+" "+r.score+"/"+r.total+"\n"+(S.streak||1)+"-Day Streak · 연속 "+(S.streak||1)+"일째\n"+genFull(S.gen)+" 대표 · Proudly playing for Team "+GEN_EN[S.gen]+"\n\n"+LINE.en+"\n"+LINE.ko+"\n\n"+inviteUrl();
 }
 function inviteText(){ return "Good Morning\n오늘 아침, 두뇌 퀴즈 함께 풀어요.\nJoin me for today's morning quiz.\n\n5문제 · 1분 · 앱 설치 없이\n"+S.gen+" 대표로 참여 중입니다. 우리 세대에 힘을 보태 주세요.\n\n"+inviteUrl(); }
 var THEMES=[{id:"dawn",ko:"새벽",sw:"linear-gradient(135deg,#FFB79C,#B7A6F2)"},{id:"mist",ko:"아침 안개",sw:"linear-gradient(135deg,#DCEBFA,#F3E3F2)"},{id:"midnight",ko:"미드나잇",sw:"linear-gradient(135deg,#141C45,#5B3E95)"}];
@@ -258,7 +258,7 @@ var THEMES=[{id:"dawn",ko:"새벽",sw:"linear-gradient(135deg,#FFB79C,#B7A6F2)"}
 function renderResult(){
   var r=S.done[TODAY], st=S.streak||1, set=todaySet(S.gen), nm=nextMile(st), sh=S.shields||0, dt=dayTitle(r.score,r.total);
   setRise(1);
-  var h='<div class="section-title" style="margin-top:4px"><h2>연속 출석</h2><span>Day Streak</span></div><div class="panel">';
+  var h='<div class="section-title c-streak" style="margin-top:4px"><h2>연속 출석</h2><span>Day Streak</span></div><div class="panel c-streak">';
   if(S.note) h+='<div class="notice shield" style="margin-bottom:16px">'+shieldIcon(true)+'<div>'+esc(S.note)+'</div></div>';
   h+='<div class="streak-hero"><div class="n">'+st+'<small>일 연속</small></div><div class="t">'+esc(streakTitle(st))+'<span>'+(nm?nm+'일 기념까지 '+(nm-st)+'일':'최고 단계입니다')+'</span></div></div>';
   h+='<div class="shields"><span class="ic">'+shieldIcon(sh>=1)+shieldIcon(sh>=2)+'</span><span><b>보호막 '+sh+'개</b> · 하루 빠져도 연속 기록을 지켜 줍니다</span></div>';
@@ -266,22 +266,22 @@ function renderResult(){
   h+='<ul class="rules"><li>7일 연속마다 보호막 1개를 받습니다 (최대 2개)</li><li>빠진 날은 보호막이 자동으로 채웁니다</li><li>보호막이 없어도 이틀 안에 돌아오면 기록이 이어집니다</li></ul></div>';
 
   var dots=okList(r).map(function(x){return '<i class="'+(x?'ok':'')+'"></i>';}).join('');
-  h+='<div class="section-title"><h2>오늘의 결과</h2><span>Today’s Quiz</span></div><div class="panel"><div class="score-row"><div><div class="score-cap">'+esc(dt[0])+'</div><div class="score-num">'+r.score+'<small> / '+r.total+'</small></div></div><div class="marks" aria-label="'+r.total+'문제 중 '+r.score+'개 정답">'+dots+'</div></div><p class="daytitle">'+esc(dt[1])+'</p>';
+  h+='<div class="section-title c-result"><h2>오늘의 결과</h2><span>Today’s Quiz</span></div><div class="panel c-result"><div class="score-row"><div><div class="score-cap">'+esc(dt[0])+'</div><div class="score-num">'+r.score+'<small> / '+r.total+'</small></div></div><div class="marks" aria-label="'+r.total+'문제 중 '+r.score+'개 정답">'+dots+'</div></div><p class="daytitle">'+esc(dt[1])+'</p>';
   h+='<ol class="review">'+set.qs.map(function(q,k){ var ok=r.oks[k]; return '<li class="'+(ok?'ok':'no')+'"><span class="mk">'+(ok?'O':'X')+'</span><span class="tx">'+esc(q.q)+'<em>정답: '+esc(q.o[q.a])+'</em></span><span class="rt" id="qr'+k+'"></span></li>'; }).join('')+'</ol></div>';
 
+  var tip=tipFor(S.gen);
+  h+='<a class="tip" href="'+tip.url+'" target="_blank" rel="noopener"><span class="tip-flag">오늘 놓치지 마세요</span><span class="tip-site">'+esc(tip.site)+' · 정부 공식 사이트</span><strong>'+esc(tip.t)+'</strong><span class="tip-d">'+esc(tip.d)+'</span><span class="tip-go">공식 사이트에서 확인하기 →</span></a><p class="note tip-note">굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. 이런 문자를 받으시면 열지 마세요.</p>';
   var days=Object.keys(S.done).length, si=stageIndex(days), nx=STAGES[si+1];
-  h+='<div class="section-title"><h2>나의 아침 나무</h2><span>My Morning Tree</span></div><div class="panel"><div class="tree-wrap"><div id="treeBox">'+treeSVG(si)+'</div><div><div class="stage-en" id="stEn">'+STAGES[si].en+'</div><div class="stage-ko" id="stKo">'+STAGES[si].ko+'</div><div class="stage-sub">'+days+'일째 가꾸는 중'+(nx?' · '+esc(nx.ko)+'까지 '+(nx.d-days)+'일':' · 마지막 단계입니다')+'</div>'+(nx?'<div class="meter"><i style="width:'+Math.round((days-STAGES[si].d)/(nx.d-STAGES[si].d)*100)+'%"></i></div>':'')+'</div></div>';
+  h+='<div class="section-title c-tree"><h2>나의 아침 나무</h2><span>My Morning Tree</span></div><div class="panel c-tree"><div class="tree-wrap"><div id="treeBox">'+treeSVG(si)+'</div><div><div class="stage-en" id="stEn">'+STAGES[si].en+'</div><div class="stage-ko" id="stKo">'+STAGES[si].ko+'</div><div class="stage-sub">'+days+'일째 가꾸는 중'+(nx?' · '+esc(nx.ko)+'까지 '+(nx.d-days)+'일':' · 마지막 단계입니다')+'</div>'+(nx?'<div class="meter"><i style="width:'+Math.round((days-STAGES[si].d)/(nx.d-STAGES[si].d)*100)+'%"></i></div>':'')+'</div></div>';
   h+='<div class="ladder">'+STAGES.map(function(t,k){ return '<span class="'+(k<si?'done':k===si?'now':'')+'">'+t.d+'일 '+t.ko+'</span>'; }).join('')+'</div>';
   if(PREVIEW) h+='<div class="preview"><label for="stageRange">미리보기 · 성장 단계</label><input type="range" id="stageRange" min="0" max="'+(STAGES.length-1)+'" value="'+si+'"></div>';
   h+='</div>';
 
-  h+='<div class="section-title"><h2>나의 두뇌 기록</h2><span>My Brain Log</span></div><div class="panel"><div class="week">'+weekHTML()+'</div><div class="skills">'+skillsHTML()+'</div><p class="note">이 기기에 쌓인 내 기록입니다. 푼 날이 늘수록 분야별 정답률이 정확해집니다.</p></div>';
-  h+='<div class="section-title"><h2>오늘의 리그 대항전</h2><span>League Match</span></div><div id="rankBox"><div class="pending">오늘의 집계를 불러오는 중입니다.</div></div>';
+  h+='<div class="section-title c-log"><h2>나의 두뇌 기록</h2><span>My Brain Log</span></div><div class="panel c-log"><div class="week">'+weekHTML()+'</div><div class="skills">'+skillsHTML()+'</div><p class="note">이 기기에 쌓인 내 기록입니다. 푼 날이 늘수록 분야별 정답률이 정확해집니다.</p></div>';
+  h+='<div class="section-title c-league"><h2>오늘의 리그 대항전</h2><span>League Match</span></div><div id="rankBox"><div class="pending">오늘의 집계를 불러오는 중입니다.</div></div>';
 
-  var tip=tipFor(S.gen);
-  h+='<div class="section-title"><h2>오늘 놓치지 마세요</h2><span>Don’t miss</span></div><a class="tip" href="'+tip.url+'" target="_blank" rel="noopener"><span class="tip-site">'+esc(tip.site)+' · 정부 공식 사이트</span><strong>'+esc(tip.t)+'</strong><span>'+esc(tip.d)+'</span><span class="tip-go">공식 사이트에서 확인하기</span></a><p class="note">굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. 이런 문자를 받으시면 열지 마세요.</p>';
 
-  h+='<div class="section-title"><h2>공유 카드</h2><span>Share &amp; invite</span></div>';
+  h+='<div class="section-title c-share"><h2>공유 카드</h2><span>Share &amp; invite</span></div>';
   h+='<div class="kinds" role="group" aria-label="카드 종류"><button class="kind" type="button" data-k="brag" aria-pressed="'+(S.kind!=="invite")+'">자랑 카드</button><button class="kind" type="button" data-k="invite" aria-pressed="'+(S.kind==="invite")+'">초대 카드</button></div>';
   h+='<div class="themes" role="group" aria-label="카드 디자인">'+THEMES.map(function(t){ return '<button class="theme" type="button" data-t="'+t.id+'" aria-pressed="'+(S.theme===t.id)+'"><i style="background:'+t.sw+'"></i>'+t.ko+'</button>'; }).join('')+'</div>';
   h+='<img class="shot" id="cardImg" alt="굿모님 공유 카드"><p class="lead" id="cardHelp" style="margin:12px 0 0;text-align:center"></p>';
@@ -292,7 +292,7 @@ function renderResult(){
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
-  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 샛별(10·20대), 기둥(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
+  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 뉴비(10·20대), 만렙(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
 
   app.querySelectorAll(".kind").forEach(function(b){ b.addEventListener("click",function(){ S.kind=b.getAttribute("data-k"); save(); app.querySelectorAll(".kind").forEach(function(x){ x.setAttribute("aria-pressed",String(x===b)); }); setStatus(""); paint(); }); });
@@ -339,11 +339,11 @@ function shareNow(r){
 }
 
 /* ---------- 카드 그리기 ---------- */
-var fontsReady=null, KO_SAMPLE=LINES.map(function(l){return l.ko;}).join('')+GENS.join('')+'샛별도전자개척자기둥베테랑명인고수전설'+'대표로 참여했습니다연속일째오늘아침함께풀어요지금순위위힘을보태주세요에서바로시작0123456789';
+var fontsReady=null, KO_SAMPLE=LINES.map(function(l){return l.ko;}).join('')+GENS.join('')+'뉴비성장캐만렙직전베테랑명인고수전설'+'대표로 참여했습니다연속일째오늘아침함께풀어요지금순위위힘을보태주세요에서바로시작0123456789';
 function loadFonts(){
   if(fontsReady) return fontsReady;
   if(!(document.fonts&&document.fonts.load)) return (fontsReady=Promise.resolve());
-  fontsReady=Promise.all([document.fonts.load('italic 600 160px "Cormorant Garamond"'),document.fonts.load('600 150px "Cormorant Garamond"'),document.fonts.load('italic 500 40px "Cormorant Garamond"'),document.fonts.load('700 46px "Noto Serif KR"',KO_SAMPLE),document.fonts.load('500 30px "Noto Serif KR"',KO_SAMPLE),document.fonts.load('600 26px "IBM Plex Sans KR"',KO_SAMPLE)]).catch(function(){});
+  fontsReady=Promise.all([document.fonts.load('italic 600 160px "Cormorant Garamond"'),document.fonts.load('600 150px "Cormorant Garamond"'),document.fonts.load('italic 500 40px "Cormorant Garamond"'),document.fonts.load('700 46px "Wanted Sans Variable"',KO_SAMPLE),document.fonts.load('500 30px "Wanted Sans Variable"',KO_SAMPLE),document.fonts.load('600 26px "Wanted Sans Variable"',KO_SAMPLE+'GOODMONIM.CO.KRTODAY’S BRAIN QUIZDAY STREAKAN INVITATION')]).catch(function(){});
   return fontsReady;
 }
 function runs(g,parts,x,y){ g.textAlign="left"; parts.forEach(function(p){ g.font=p[1]; g.fillStyle=p[2]; g.fillText(p[0],x,y); x+=g.measureText(p[0]).width; }); }
@@ -362,21 +362,21 @@ function drawCard(r,theme){
     var W=1080,H=1350,P=96,c=document.createElement("canvas"); c.width=W; c.height=H; var g=c.getContext("2d"), T=themeOf(theme), st=S.streak||1, gold=st>=3, ok=okList(r);
     bg(g,T,W,H,1,1);
     g.strokeStyle=gold?T.gold:T.rule; g.lineWidth=gold?3:1.5; g.strokeRect(40,40,W-80,H-80);
-    g.fillStyle=T.muted; g.font='600 24px "IBM Plex Sans KR", sans-serif'; spaced(g,EN_DATE.toUpperCase(),P,128,4); spaced(g,"GOODMONIM",W-P,128,6,"right");
+    g.fillStyle=T.muted; g.font='600 24px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; spaced(g,EN_DATE.toUpperCase(),P,128,4); spaced(g,"GOODMONIM",W-P,128,6,"right");
     g.fillStyle=T.ink; g.textAlign="left"; g.font='italic 600 196px "Cormorant Garamond", serif'; g.fillText("Good",P-6,372); g.fillText("Morning",P-6,540);
-    g.font='700 48px "Noto Serif KR", serif'; var y=650; wrapKo(g,LINE.ko,W-2*P).forEach(function(l){ g.fillText(l,P,y); y+=70; });
+    g.font='700 48px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; var y=650; wrapKo(g,LINE.ko,W-2*P).forEach(function(l){ g.fillText(l,P,y); y+=70; });
     g.fillStyle=T.muted; g.font='italic 500 42px "Cormorant Garamond", serif'; g.fillText(LINE.en,P,y+4);
     var ry=Math.max(y+70,880); g.strokeStyle=T.rule; g.lineWidth=1.5; g.beginPath(); g.moveTo(P,ry); g.lineTo(W-P,ry); g.stroke();
-    g.fillStyle=T.muted; g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"TODAY’S BRAIN QUIZ",P,ry+62,5);
+    g.fillStyle=T.muted; g.font='600 22px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; spaced(g,"TODAY’S BRAIN QUIZ",P,ry+62,5);
     g.fillStyle=T.ink; g.font='600 170px "Cormorant Garamond", serif'; g.textAlign="left"; g.fillText(String(r.score),P-4,ry+222);
     var sw=g.measureText(String(r.score)).width; g.fillStyle=T.muted; g.font='500 64px "Cormorant Garamond", serif'; g.fillText("/ "+r.total,P+sw+10,ry+222);
     ok.forEach(function(v,i){ g.beginPath(); g.arc(P+14+i*44,ry+272,12,0,Math.PI*2); g.lineWidth=2.5; g.strokeStyle=T.ink; if(v){ g.fillStyle=T.ink; g.fill(); } g.stroke(); });
-    g.fillStyle=T.muted; g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"DAY STREAK",W-P,ry+62,5,"right");
+    g.fillStyle=T.muted; g.font='600 22px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; spaced(g,"DAY STREAK",W-P,ry+62,5,"right");
     g.fillStyle=gold?T.gold:T.ink; g.font='600 170px "Cormorant Garamond", serif'; g.textAlign="right"; g.fillText(String(st),W-P,ry+222);
     g.font='italic 600 40px "Cormorant Garamond", serif'; g.fillText(streakTitle(st),W-P,ry+282);
-    runs(g,[[GEN_KO[S.gen],'700 40px "Noto Serif KR", serif',T.ink],[" "+S.gen+"  ",'500 22px "IBM Plex Sans KR", sans-serif',T.muted],["대표로 참여했습니다",'700 32px "Noto Serif KR", serif',T.ink]],P,H-128);
-    g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("Proudly playing for the "+GEN_EN[S.gen],P,H-84);
-    g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"GOODMONIM.CO.KR",W-P,H-128,4,"right");
+    runs(g,[[GEN_KO[S.gen],'700 40px "Wanted Sans Variable", "Pretendard Variable", sans-serif',T.ink],[" "+S.gen+"  ",'500 22px "Wanted Sans Variable", "Pretendard Variable", sans-serif',T.muted],["대표로 참여했습니다",'700 32px "Wanted Sans Variable", "Pretendard Variable", sans-serif',T.ink]],P,H-128);
+    g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("Proudly playing for Team "+GEN_EN[S.gen],P,H-84);
+    g.font='600 22px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; spaced(g,"GOODMONIM.CO.KR",W-P,H-128,4,"right");
     return c.toDataURL("image/png");
   });
 }
@@ -385,16 +385,16 @@ function drawInvite(theme){
     var W=1080,H=1350,P=96,c=document.createElement("canvas"); c.width=W; c.height=H; var g=c.getContext("2d"), T=themeOf(theme);
     bg(g,T,W,H,1,1);
     g.strokeStyle=T.gold; g.lineWidth=3; g.strokeRect(40,40,W-80,H-80); g.lineWidth=1; g.strokeRect(54,54,W-108,H-108);
-    g.fillStyle=T.muted; g.font='600 24px "IBM Plex Sans KR", sans-serif'; spaced(g,"AN INVITATION",P,136,6); spaced(g,EN_DATE.toUpperCase(),W-P,136,4,"right");
+    g.fillStyle=T.muted; g.font='600 24px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; spaced(g,"AN INVITATION",P,136,6); spaced(g,EN_DATE.toUpperCase(),W-P,136,4,"right");
     g.fillStyle=T.ink; g.textAlign="left"; g.font='italic 600 128px "Cormorant Garamond", serif'; g.fillText("Good Morning,",P-4,330);
-    g.font='700 72px "Noto Serif KR", serif'; g.fillText("오늘 아침,",P,480); g.fillText("함께 풀어요.",P,575);
+    g.font='700 72px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; g.fillText("오늘 아침,",P,480); g.fillText("함께 풀어요.",P,575);
     g.fillStyle=T.muted; g.font='italic 500 46px "Cormorant Garamond", serif'; g.fillText("Join me for today’s morning quiz.",P,650);
     var ry=730; g.strokeStyle=T.rule; g.lineWidth=1.5; g.beginPath(); g.moveTo(P,ry); g.lineTo(W-P,ry); g.stroke();
-    [["5","Questions","오늘의 문제"],["1","Minute","걸리는 시간"],["0","Apps","설치할 앱"]].forEach(function(rw,i){ var x=P+i*300; g.fillStyle=T.ink; g.font='600 120px "Cormorant Garamond", serif'; g.fillText(rw[0],x,ry+150); var nw=g.measureText(rw[0]).width; g.font='italic 500 40px "Cormorant Garamond", serif'; g.fillText(rw[1],x+nw+12,ry+150); g.fillStyle=T.muted; g.font='500 28px "Noto Serif KR", serif'; g.fillText(rw[2],x,ry+200); });
-    runs(g,[[GEN_KO[S.gen],'700 48px "Noto Serif KR", serif',T.ink],[" "+S.gen+"  ",'500 24px "IBM Plex Sans KR", sans-serif',T.muted],["대표가 보내는 아침 초대장",'700 40px "Noto Serif KR", serif',T.ink]],P,ry+310);
-    pill(g,P,H-250,W-2*P,104,T.btn); g.fillStyle=T.btnInk; g.textAlign="center"; g.font='700 40px "IBM Plex Sans KR", sans-serif'; g.fillText("goodmonim.co.kr 에서 바로 시작",W/2,H-184);
-    g.textAlign="left"; g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("With love, from the "+GEN_EN[S.gen],P,H-100);
-    g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"GOODMONIM",W-P,H-102,6,"right");
+    [["5","Questions","오늘의 문제"],["1","Minute","걸리는 시간"],["0","Apps","설치할 앱"]].forEach(function(rw,i){ var x=P+i*300; g.fillStyle=T.ink; g.font='600 120px "Cormorant Garamond", serif'; g.fillText(rw[0],x,ry+150); var nw=g.measureText(rw[0]).width; g.font='italic 500 40px "Cormorant Garamond", serif'; g.fillText(rw[1],x+nw+12,ry+150); g.fillStyle=T.muted; g.font='500 28px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; g.fillText(rw[2],x,ry+200); });
+    runs(g,[[GEN_KO[S.gen],'700 48px "Wanted Sans Variable", "Pretendard Variable", sans-serif',T.ink],[" "+S.gen+"  ",'500 24px "Wanted Sans Variable", "Pretendard Variable", sans-serif',T.muted],["대표가 보내는 아침 초대장",'700 40px "Wanted Sans Variable", "Pretendard Variable", sans-serif',T.ink]],P,ry+310);
+    pill(g,P,H-250,W-2*P,104,T.btn); g.fillStyle=T.btnInk; g.textAlign="center"; g.font='700 40px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; g.fillText("goodmonim.co.kr 에서 바로 시작",W/2,H-184);
+    g.textAlign="left"; g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("With love, from Team "+GEN_EN[S.gen],P,H-100);
+    g.font='600 22px "Wanted Sans Variable", "Pretendard Variable", sans-serif'; spaced(g,"GOODMONIM",W-P,H-102,6,"right");
     return c.toDataURL("image/png");
   });
 }
