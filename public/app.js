@@ -9,7 +9,7 @@ var MIN_SAMPLE = 30;
 
 var GEN_EN={"10대":"Rising Stars","20대":"Challengers","30대":"Pioneers","40대":"Pillars","50대":"Veterans","60대":"Masters","70대":"Grandmasters","80·90대":"Legends"};
 var GEN_KO={"10대":"샛별","20대":"도전자","30대":"개척자","40대":"기둥","50대":"베테랑","60대":"명인","70대":"고수","80·90대":"전설"};
-function genFull(g){ return g+" "+(GEN_KO[g]||""); }
+function genFull(g){ return (GEN_KO[g]||"")+"("+g+")"; }
 var CAT_EN=["Proverbs","Spelling","Knowledge","Brain Math","Knowledge"];
 var CAT_KO=["속담·우리말","맞춤법","상식","두뇌 계산","상식"];
 var LINES=[
@@ -178,7 +178,7 @@ function renderGen(){
   h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>샛별, 기둥, 명인, 전설 4개 리그로 겨루다가, 참여가 많아진 세대는 독립 리그로 나갑니다.</p></div></div>';
   h+='</div><div class="growrow" aria-label="나무가 자라는 모습">'+[0,1,4,6].map(function(k){ return '<figure>'+treeSVG(k)+'<figcaption>'+STAGES[k].ko+'</figcaption></figure>'; }).join('')+'</div></div>';
   h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">고른 세대의 리그에 함께 들어갑니다. 이름과 정확한 나이는 묻지 않습니다.</p><div class="gens">';
-  GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(g)+' · '+esc(GEN_KO[g])+'</strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
+  GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(GEN_KO[g])+'<small>'+esc(g)+'</small></strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
   app.innerHTML=h+'</div>';
   app.querySelectorAll(".gen").forEach(function(b){ b.addEventListener("click",function(){ S.gen=b.getAttribute("data-gen"); save(); run={i:0,picks:[],answered:false}; renderQuiz(); window.scrollTo(0,0); }); });
 }
@@ -346,6 +346,7 @@ function loadFonts(){
   fontsReady=Promise.all([document.fonts.load('italic 600 160px "Cormorant Garamond"'),document.fonts.load('600 150px "Cormorant Garamond"'),document.fonts.load('italic 500 40px "Cormorant Garamond"'),document.fonts.load('700 46px "Noto Serif KR"',KO_SAMPLE),document.fonts.load('500 30px "Noto Serif KR"',KO_SAMPLE),document.fonts.load('600 26px "IBM Plex Sans KR"',KO_SAMPLE)]).catch(function(){});
   return fontsReady;
 }
+function runs(g,parts,x,y){ g.textAlign="left"; parts.forEach(function(p){ g.font=p[1]; g.fillStyle=p[2]; g.fillText(p[0],x,y); x+=g.measureText(p[0]).width; }); }
 function spaced(g,text,x,y,gap,align){ var w=0,i,ch=Array.from(text); for(i=0;i<ch.length;i++) w+=g.measureText(ch[i]).width+(i<ch.length-1?gap:0); var cx=align==="right"?x-w:x; g.textAlign="left"; for(i=0;i<ch.length;i++){ g.fillText(ch[i],cx,y); cx+=g.measureText(ch[i]).width+gap; } }
 function wrapKo(g,text,maxW){ var lines=[],cur=""; text.split(" ").forEach(function(w){ var t=cur?cur+" "+w:w; if(g.measureText(t).width>maxW&&cur){ lines.push(cur); cur=w; } else cur=t; }); if(cur) lines.push(cur); return lines; }
 function themeOf(theme){ return {
@@ -373,7 +374,7 @@ function drawCard(r,theme){
     g.fillStyle=T.muted; g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"DAY STREAK",W-P,ry+62,5,"right");
     g.fillStyle=gold?T.gold:T.ink; g.font='600 170px "Cormorant Garamond", serif'; g.textAlign="right"; g.fillText(String(st),W-P,ry+222);
     g.font='italic 600 40px "Cormorant Garamond", serif'; g.fillText(streakTitle(st),W-P,ry+282);
-    g.textAlign="left"; g.fillStyle=T.ink; g.font='700 32px "Noto Serif KR", serif'; g.fillText(genFull(S.gen)+" 대표로 참여했습니다",P,H-128);
+    runs(g,[[GEN_KO[S.gen],'700 40px "Noto Serif KR", serif',T.ink],[" "+S.gen+"  ",'500 22px "IBM Plex Sans KR", sans-serif',T.muted],["대표로 참여했습니다",'700 32px "Noto Serif KR", serif',T.ink]],P,H-128);
     g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("Proudly playing for the "+GEN_EN[S.gen],P,H-84);
     g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"GOODMONIM.CO.KR",W-P,H-128,4,"right");
     return c.toDataURL("image/png");
@@ -390,7 +391,7 @@ function drawInvite(theme){
     g.fillStyle=T.muted; g.font='italic 500 46px "Cormorant Garamond", serif'; g.fillText("Join me for today’s morning quiz.",P,650);
     var ry=730; g.strokeStyle=T.rule; g.lineWidth=1.5; g.beginPath(); g.moveTo(P,ry); g.lineTo(W-P,ry); g.stroke();
     [["5","Questions","오늘의 문제"],["1","Minute","걸리는 시간"],["0","Apps","설치할 앱"]].forEach(function(rw,i){ var x=P+i*300; g.fillStyle=T.ink; g.font='600 120px "Cormorant Garamond", serif'; g.fillText(rw[0],x,ry+150); var nw=g.measureText(rw[0]).width; g.font='italic 500 40px "Cormorant Garamond", serif'; g.fillText(rw[1],x+nw+12,ry+150); g.fillStyle=T.muted; g.font='500 28px "Noto Serif KR", serif'; g.fillText(rw[2],x,ry+200); });
-    g.fillStyle=T.ink; g.font='700 40px "Noto Serif KR", serif'; g.fillText(genFull(S.gen)+" 대표가 보내는 아침 초대장",P,ry+310);
+    runs(g,[[GEN_KO[S.gen],'700 48px "Noto Serif KR", serif',T.ink],[" "+S.gen+"  ",'500 24px "IBM Plex Sans KR", sans-serif',T.muted],["대표가 보내는 아침 초대장",'700 40px "Noto Serif KR", serif',T.ink]],P,ry+310);
     pill(g,P,H-250,W-2*P,104,T.btn); g.fillStyle=T.btnInk; g.textAlign="center"; g.font='700 40px "IBM Plex Sans KR", sans-serif'; g.fillText("goodmonim.co.kr 에서 바로 시작",W/2,H-184);
     g.textAlign="left"; g.fillStyle=T.muted; g.font='italic 500 34px "Cormorant Garamond", serif'; g.fillText("With love, from the "+GEN_EN[S.gen],P,H-100);
     g.font='600 22px "IBM Plex Sans KR", sans-serif'; spaced(g,"GOODMONIM",W-P,H-102,6,"right");
