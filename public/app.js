@@ -173,7 +173,7 @@ function renderGen(){
   h+='<div class="item"><span class="num">i</span><div><h3>매일 아침 5문제, 1분</h3><p>속담, 맞춤법, 상식, 두뇌 계산. 앱 설치도 회원가입도 없습니다.</p></div></div>';
   h+='<div class="item"><span class="num">ii</span><div><h3>연속 기록을 지켜 드립니다</h3><p>7일마다 보호막을 받고, 하루이틀 쉬어도 기록이 이어집니다.</p></div></div>';
   h+='<div class="item"><span class="num">iii</span><div><h3>나의 아침 나무가 자랍니다</h3><p>푼 날이 쌓일수록 씨앗이 새싹, 꽃나무, 큰 나무로 자랍니다.</p></div></div>';
-  h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>세대 대항전과 자랑 카드로 가족, 친구와 이야기를 나눕니다.</p></div></div>';
+  h+='<div class="item"><span class="num">iv</span><div><h3>우리 세대를 대표합니다</h3><p>가까운 세대끼리 4개 리그로 겨루다가, 참여가 많아진 세대는 독립 리그로 나갑니다.</p></div></div>';
   h+='</div><div class="growrow" aria-label="나무가 자라는 모습">'+[0,1,4,6].map(function(k){ return '<figure>'+treeSVG(k)+'<figcaption>'+STAGES[k].ko+'</figcaption></figure>'; }).join('')+'</div></div>';
   h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">오늘 우리 세대 순위에 함께 들어갑니다. 이름과 나이는 묻지 않습니다.</p><div class="gens">';
   GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(g)+'</strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
@@ -225,17 +225,21 @@ function loadStats(){
 }
 function fillStats(){
   var box=document.getElementById("rankBox"); if(!box||!STATS) return;
-  var total=STATS.total||0, rows=(STATS.gens||[]).filter(function(g){ return g.n>=MIN_SAMPLE; }).sort(function(a,b){ return b.acc-a.acc; });
+  var total=STATS.total||0, L=STATS.leagues||[];
+  var mine=L.find(function(l){ return l.gens.indexOf(S.gen)>=0; });
+  var open=L.filter(function(l){ return l.n>=MIN_SAMPLE; }).sort(function(a,b){ return b.acc-a.acc; });
   var h='';
-  if(!rows.length){ h='<div class="pending"><b>'+total+'명</b>이 오늘 함께 풀었습니다.<br>세대마다 '+MIN_SAMPLE+'명이 모이면 세대 순위를 공개합니다. 가족과 친구를 초대해 우리 세대 순위를 열어 보세요.</div>'; }
-  else {
-    h='<div class="rank">';
-    rows.forEach(function(x){ var me=x.gen===S.gen, p=Math.round(x.acc*100); h+='<div class="row'+(me?' me':'')+'"><span>'+esc(x.gen)+'<em>'+esc(GEN_EN[x.gen]||"")+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+p+'%</span></div>'; });
+  if((STATS.newSplits||[]).indexOf(S.gen)>=0) h+='<div class="notice shield" style="margin-bottom:12px">'+shieldIcon(true)+'<div><strong>축하합니다! 이번 주부터 '+esc(S.gen)+' 독립 리그가 열렸습니다</strong>7일 연속 하루 '+MIN_SAMPLE+'명 넘게 참여해 주신 덕분입니다.</div></div>';
+  if(!open.length){
+    h+='<div class="pending"><b>'+total+'명</b>이 오늘 함께 풀었습니다.<br>리그마다 '+MIN_SAMPLE+'명이 모이면 순위를 공개합니다.'+(mine?' 지금 <strong>'+esc(mine.name)+' 리그</strong>는 '+mine.n+'명입니다.':'')+' 가족과 친구를 초대해 우리 리그 순위를 열어 보세요.</div>';
+  } else {
+    h+='<div class="rank">';
+    open.forEach(function(x){ var me=mine&&x.name===mine.name, p=Math.round(x.acc*100); h+='<div class="row'+(me?' me':'')+'"><span>'+esc(x.name)+'<em>'+(x.independent?'독립 리그':x.gens.length>1?'통합 리그':'')+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+p+'%</span></div>'; });
     h+='</div>';
-    var mine=(STATS.gens||[]).find(function(g){ return g.gen===S.gen; });
-    if(mine&&mine.n<MIN_SAMPLE) h+='<p class="note">'+esc(S.gen)+'는 지금 '+mine.n+'명입니다. '+MIN_SAMPLE+'명이 모이면 순위에 오릅니다.</p>';
-    h+='<p class="note">세대별 평균 정답률 · 오늘 참여 '+total+'명</p>';
+    if(mine&&mine.n<MIN_SAMPLE) h+='<p class="note">'+esc(mine.name)+' 리그는 지금 '+mine.n+'명입니다. '+MIN_SAMPLE+'명이 모이면 순위에 오릅니다.</p>';
+    h+='<p class="note">공통 5문제 평균 정답률 · 오늘 참여 '+total+'명</p>';
   }
+  h+='<p class="note">처음에는 가까운 세대끼리 4개 리그로 겨룹니다. 한 세대가 7일 연속 하루 '+MIN_SAMPLE+'명을 넘기면 다음 주 월요일부터 그 세대만의 독립 리그가 열립니다.</p>';
   box.innerHTML=h;
   (STATS.q||[]).forEach(function(rate,k){ var el=document.getElementById("qr"+k); if(el&&rate&&rate.n>=MIN_SAMPLE) el.textContent="정답률 "+Math.round(rate.ok/rate.n*100)+"%"; });
 }
@@ -270,7 +274,7 @@ function renderResult(){
   h+='</div>';
 
   h+='<div class="section-title"><h2>나의 두뇌 기록</h2><span>My Brain Log</span></div><div class="panel"><div class="week">'+weekHTML()+'</div><div class="skills">'+skillsHTML()+'</div><p class="note">이 기기에 쌓인 내 기록입니다. 푼 날이 늘수록 분야별 정답률이 정확해집니다.</p></div>';
-  h+='<div class="section-title"><h2>오늘의 세대 대항전</h2><span>Generation Match</span></div><div id="rankBox"><div class="pending">오늘의 집계를 불러오는 중입니다.</div></div>';
+  h+='<div class="section-title"><h2>오늘의 리그 대항전</h2><span>League Match</span></div><div id="rankBox"><div class="pending">오늘의 집계를 불러오는 중입니다.</div></div>';
 
   var tip=tipFor(S.gen);
   h+='<div class="section-title"><h2>오늘 놓치지 마세요</h2><span>Don’t miss</span></div><a class="tip" href="'+tip.url+'" target="_blank" rel="noopener"><span class="tip-site">'+esc(tip.site)+' · 정부 공식 사이트</span><strong>'+esc(tip.t)+'</strong><span>'+esc(tip.d)+'</span><span class="tip-go">공식 사이트에서 확인하기</span></a><p class="note">굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. 이런 문자를 받으시면 열지 마세요.</p>';
@@ -286,7 +290,7 @@ function renderResult(){
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
-  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 세대마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
+  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 10·20대, 30·40대, 50·60대, 70대 이상 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
 
   app.querySelectorAll(".kind").forEach(function(b){ b.addEventListener("click",function(){ S.kind=b.getAttribute("data-k"); save(); app.querySelectorAll(".kind").forEach(function(x){ x.setAttribute("aria-pressed",String(x===b)); }); setStatus(""); paint(); }); });

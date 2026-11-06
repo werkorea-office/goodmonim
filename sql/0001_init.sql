@@ -22,3 +22,7 @@ CREATE TABLE IF NOT EXISTS events (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS events_day_type ON events(day, type);
+
+-- 리그 자동 독립 기록 (한 번 독립하면 유지)
+CREATE TABLE IF NOT EXISTS league_splits (gen TEXT PRIMARY KEY, since TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);

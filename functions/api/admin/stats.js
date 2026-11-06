@@ -1,4 +1,4 @@
-import { today, shiftDay, json } from "../../_lib.js";
+import { today, shiftDay, json, currentLeagues } from "../../_lib.js";
 // 관리자 숫자 화면용 (비밀 키 필요)
 export async function onRequestGet({ request, env }){
   const key = request.headers.get("x-admin-key") || "";
@@ -14,5 +14,8 @@ export async function onRequestGet({ request, env }){
     q("SELECT first_day day, COUNT(*) n FROM (SELECT device, MIN(day) first_day FROM plays GROUP BY device) WHERE first_day>=? GROUP BY first_day", from)
   ]);
   const totals = await env.DB.prepare("SELECT COUNT(DISTINCT device) devices, COUNT(*) plays FROM plays").first();
-  return json({ok:true, today:t, totals, plays, gens, events, invited, retention, firsts});
+  const splits = (await env.DB.prepare("SELECT gen, since FROM league_splits ORDER BY since").all()).results||[];
+  const leagues = currentLeagues(splits.map(s=>s.gen)).map(l=>l.name);
+  const genDays = await q("SELECT gen, day, COUNT(*) n FROM plays WHERE day>=? GROUP BY gen, day", shiftDay(t,-7));
+  return json({ok:true, today:t, totals, plays, gens, events, invited, retention, firsts, splits, leagues, genDays});
 }

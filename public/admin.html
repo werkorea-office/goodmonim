@@ -66,6 +66,7 @@ function load(){
     h+=tile(k,'공유 1번이 데려온 새 참여자','1 이상이면 저절로 커짐',k!=="-"&&k>=1?'good':k!=="-"&&k>=.3?'warn':'bad');
     h+=tile((d.totals.devices||0).toLocaleString()+'명','누적 참여 기기','총 '+(d.totals.plays||0).toLocaleString()+'회');
     h+='</div>';
+    h+='<h2>리그 현황</h2><p class="muted">지금 리그: '+d.leagues.join(' · ')+(d.splits.length?' · 독립: '+d.splits.map(function(s){return s.gen+'('+s.since+'부터)';}).join(', '):' · 아직 독립한 세대 없음')+'</p>';
     h+='<h2>최근 7일 세대별 참여 기기</h2><div class="wrap-table"><table><tr><th>세대</th><th>기기 수</th></tr>'+d.gens.map(function(g){ return '<tr><td>'+g.gen+'</td><td>'+g.n+'</td></tr>'; }).join('')+'</table></div>';
     h+='<h2>날짜별</h2><div class="wrap-table"><table><tr><th>날짜</th><th>방문</th><th>참여</th><th>처음 온 사람</th><th>평균 정답률</th><th>다음 날 재방문</th><th>공유</th><th>초대 링크 열림</th><th>초대로 참여</th></tr>';
     days.forEach(function(x){ var r=byDay[x]; h+='<tr><td>'+x+'</td><td>'+r.visit+'</td><td>'+r.plays+'</td><td>'+r.firsts+'</td><td>'+(r.plays?r.acc+'%':'-')+'</td><td>'+(r.base?pct(r.back,r.base)+'%':'-')+'</td><td>'+(r.share_brag+r.share_invite+r.copy)+'</td><td>'+r.invite_open+'</td><td>'+r.invited+'</td></tr>'; });
