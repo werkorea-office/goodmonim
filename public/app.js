@@ -271,6 +271,7 @@ function renderResult(){
 
   var tip=tipFor(S.gen);
   h+='<a class="tip" href="'+tip.url+'" target="_blank" rel="noopener"><span class="tip-flag">오늘 놓치지 마세요</span><span class="tip-site">'+esc(tip.site)+' · 정부 공식 사이트</span><strong>'+esc(tip.t)+'</strong><span class="tip-d">'+esc(tip.d)+'</span><span class="tip-go">공식 사이트에서 확인하기 →</span></a><p class="note tip-note">굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. 이런 문자를 받으시면 열지 마세요.</p>';
+  if(window.GM_installCard) h+=window.GM_installCard();
   var days=Object.keys(S.done).length, si=stageIndex(days), nx=STAGES[si+1];
   h+='<div class="section-title c-tree"><h2>나의 아침 나무</h2><span>My Morning Tree</span></div><div class="panel c-tree"><div class="tree-wrap"><div id="treeBox">'+treeSVG(si)+'</div><div><div class="stage-en" id="stEn">'+STAGES[si].en+'</div><div class="stage-ko" id="stKo">'+STAGES[si].ko+'</div><div class="stage-sub">'+days+'일째 가꾸는 중'+(nx?' · '+esc(nx.ko)+'까지 '+(nx.d-days)+'일':' · 마지막 단계입니다')+'</div>'+(nx?'<div class="meter"><i style="width:'+Math.round((days-STAGES[si].d)/(nx.d-STAGES[si].d)*100)+'%"></i></div>':'')+'</div></div>';
   h+='<div class="ladder">'+STAGES.map(function(t,k){ return '<span class="'+(k<si?'done':k===si?'now':'')+'">'+t.d+'일 '+t.ko+'</span>'; }).join('')+'</div>';
@@ -292,6 +293,7 @@ function renderResult(){
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
+  if(window.GM_bindInstall) window.GM_bindInstall();
   if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 뉴비(10·20대), 만렙(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
 

@@ -1,5 +1,5 @@
 import { today, shiftDay, json, readJson, validDevice, BOT, GENS } from "../_lib.js";
-const TYPES = new Set(["visit","invite_open","share_brag","share_invite","copy"]);
+const TYPES = new Set(["visit","invite_open","share_brag","share_invite","copy","install_click","install_done","home_launch"]);
 // 방문·공유·초대 기록 (봇 제외)
 export async function onRequestPost({ request, env }){
   if(BOT.test(request.headers.get("user-agent")||"")) return new Response(null, {status:204});
