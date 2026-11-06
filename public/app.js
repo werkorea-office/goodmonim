@@ -234,7 +234,7 @@ function fillStats(){
     h+='<div class="pending"><b>'+total+'명</b>이 오늘 함께 풀었습니다.<br>리그마다 '+MIN_SAMPLE+'명이 모이면 순위를 공개합니다.'+(mine?' 지금 <strong>'+esc(mine.name)+' 리그</strong>는 '+mine.n+'명입니다.':'')+' 가족과 친구를 초대해 우리 리그 순위를 열어 보세요.</div>';
   } else {
     h+='<div class="rank">';
-    open.forEach(function(x){ var me=mine&&x.name===mine.name, p=Math.round(x.acc*100); h+='<div class="row'+(me?' me':'')+'"><span>'+esc(x.name)+'<em>'+(x.independent?'독립 리그':x.gens.length>1?'통합 리그':'')+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+p+'%</span></div>'; });
+    open.forEach(function(x){ var me=mine&&x.name===mine.name, p=Math.round(x.acc*100); h+='<div class="row'+(me?' me':'')+'"><span>'+esc(x.name)+'<em class="tag">'+(x.independent?'독립 리그':x.gens.length>1?'통합 리그':'')+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+p+'%</span></div>'; });
     h+='</div>';
     if(mine&&mine.n<MIN_SAMPLE) h+='<p class="note">'+esc(mine.name)+' 리그는 지금 '+mine.n+'명입니다. '+MIN_SAMPLE+'명이 모이면 순위에 오릅니다.</p>';
     h+='<p class="note">공통 5문제 평균 정답률 · 오늘 참여 '+total+'명</p>';
