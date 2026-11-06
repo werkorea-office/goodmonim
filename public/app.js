@@ -4,7 +4,7 @@
 var CFG = window.GM_CONFIG || {};
 var SITE = CFG.siteUrl || location.origin;
 var BANK = window.GM_BANK, A=BANK.A, B=BANK.B, C=BANK.C, BONUS=BANK.BONUS, GENS=BANK.GENS;
-var PREVIEW = /[?&]preview=1/.test(location.search);
+var PREVIEW = !!window.GM_FORCE_PREVIEW || /[?&]preview=1/.test(location.search);
 var MIN_SAMPLE = 30;
 
 var GEN_EN={"10대":"Teens","20대":"Twenties","30대":"Thirties","40대":"Forties","50대":"Fifties","60대":"Sixties","70대":"Seventies","80·90대":"Eighties & Nineties"};
@@ -286,7 +286,7 @@ function renderResult(){
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
-  if(STATS) fillStats(); else loadStats();
+  if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 세대마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
 
   app.querySelectorAll(".kind").forEach(function(b){ b.addEventListener("click",function(){ S.kind=b.getAttribute("data-k"); save(); app.querySelectorAll(".kind").forEach(function(x){ x.setAttribute("aria-pressed",String(x===b)); }); setStatus(""); paint(); }); });
