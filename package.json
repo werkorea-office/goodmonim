@@ -1,0 +1,13 @@
+{
+  "name": "goodmonim",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/validate-bank.mjs",
+    "build": "node scripts/validate-bank.mjs",
+    "dev": "wrangler pages dev public --d1 DB=goodmonim-db --port 8788"
+  },
+  "devDependencies": {
+    "wrangler": "4.42.0"
+  }
+}

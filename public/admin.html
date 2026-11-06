@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>굿모님 운영 숫자</title>
+<style>
+:root{--bg:#F6F7FA;--surface:#fff;--ink:#141A2E;--muted:#6A7189;--line:#E3E6EE;--accent:#2C3A73;--good:#1F7A57;--warn:#B8873A;--bad:#B4433B;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#0B0E1A;--surface:#121729;--ink:#F1F3F9;--muted:#9BA3BD;--line:#252C45;--accent:#C9D2FF;--good:#5CCB98;--warn:#E5C27C;--bad:#F08A80;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;word-break:keep-all}
+main{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:1.3rem;margin:0 0 4px} .muted{color:var(--muted);font-size:.85rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:18px 0}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;border-top:4px solid var(--line)}
+.tile.good{border-top-color:var(--good)} .tile.warn{border-top-color:var(--warn)} .tile.bad{border-top-color:var(--bad)}
+.tile b{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums}
+.tile span{font-size:.78rem;color:var(--muted)}
+.tile em{display:block;font-style:normal;font-size:.72rem;color:var(--muted);margin-top:4px}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.82rem;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right} th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+h2{font-size:1rem;margin:26px 0 8px}
+.wrap-table{overflow-x:auto}
+form{display:flex;gap:8px;margin-top:16px} input{flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}
+button{padding:10px 16px;border:0;border-radius:10px;background:var(--accent);color:var(--surface);font:inherit;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>굿모님 운영 숫자</h1>
+<p class="muted" id="sub">관리자 키를 넣으면 최근 4주 숫자가 나옵니다. 키는 이 기기에만 저장됩니다.</p>
+<form id="f"><label for="k" class="muted" hidden>관리자 키</label><input id="k" type="password" placeholder="관리자 키" autocomplete="current-password"><button type="submit">보기</button></form>
+<div id="out"></div>
+</main>
+<script>
+(function(){
+var f=document.getElementById("f"), k=document.getElementById("k"), out=document.getElementById("out");
+try{ k.value=localStorage.getItem("gm.admin")||""; }catch(e){}
+f.addEventListener("submit",function(e){ e.preventDefault(); try{ localStorage.setItem("gm.admin",k.value); }catch(err){} load(); });
+if(k.value) load();
+function pct(a,b){ return b?Math.round(a/b*100):0; }
+function tile(v,label,note,level){ return '<div class="tile '+(level||'')+'"><b>'+v+'</b><span>'+label+'</span>'+(note?'<em>'+note+'</em>':'')+'</div>'; }
+function load(){
+  out.innerHTML='<p class="muted">불러오는 중…</p>';
+  fetch("/api/admin/stats",{headers:{"x-admin-key":k.value}}).then(function(r){ return r.json(); }).then(function(d){
+    if(!d.ok){ out.innerHTML='<p class="muted">키가 맞지 않습니다.</p>'; return; }
+    var byDay={}; function row(day){ return byDay[day]||(byDay[day]={day:day,plays:0,acc:0,visit:0,invite_open:0,share_brag:0,share_invite:0,copy:0,invited:0,firsts:0,base:0,back:0}); }
+    d.plays.forEach(function(p){ var r=row(p.day); r.plays=p.n; r.acc=p.acc; });
+    d.events.forEach(function(e){ row(e.day)[e.type]=e.n; });
+    d.invited.forEach(function(e){ row(e.day).invited=e.n; });
+    d.firsts.forEach(function(e){ row(e.day).firsts=e.n; });
+    d.retention.forEach(function(e){ var r=row(e.day); r.base=e.base; r.back=e.back; });
+    var days=Object.keys(byDay).sort().reverse(), last7=days.slice(0,7).map(function(x){return byDay[x];});
+    var sum=function(arr,f){ return arr.reduce(function(a,r){ return a+(r[f]||0); },0); };
+    var avgPlays=Math.round(sum(last7,"plays")/Math.max(1,last7.length));
+    var ret=pct(sum(last7.filter(function(r){return r.day!==d.today;}),"back"),sum(last7.filter(function(r){return r.day!==d.today;}),"base"));
+    var shareRate=pct(sum(last7,"share_brag")+sum(last7,"share_invite")+sum(last7,"copy"),sum(last7,"plays"));
+    var shares=sum(last7,"share_brag")+sum(last7,"share_invite")+sum(last7,"copy");
+    var k=shares?(sum(last7,"invited")/shares).toFixed(2):"-";
+    var h='<div class="tiles">';
+    h+=tile(avgPlays+'명','최근 7일 하루 평균 참여','합격선 1,000명',avgPlays>=1000?'good':avgPlays>=300?'warn':'bad');
+    h+=tile(ret+'%','다음 날 다시 온 비율','합격선 30%',ret>=30?'good':ret>=20?'warn':'bad');
+    h+=tile(shareRate+'%','공유한 비율','합격선 10%',shareRate>=10?'good':shareRate>=5?'warn':'bad');
+    h+=tile(k,'공유 1번이 데려온 새 참여자','1 이상이면 저절로 커짐',k!=="-"&&k>=1?'good':k!=="-"&&k>=.3?'warn':'bad');
+    h+=tile((d.totals.devices||0).toLocaleString()+'명','누적 참여 기기','총 '+(d.totals.plays||0).toLocaleString()+'회');
+    h+='</div>';
+    h+='<h2>최근 7일 세대별 참여 기기</h2><div class="wrap-table"><table><tr><th>세대</th><th>기기 수</th></tr>'+d.gens.map(function(g){ return '<tr><td>'+g.gen+'</td><td>'+g.n+'</td></tr>'; }).join('')+'</table></div>';
+    h+='<h2>날짜별</h2><div class="wrap-table"><table><tr><th>날짜</th><th>방문</th><th>참여</th><th>처음 온 사람</th><th>평균 정답률</th><th>다음 날 재방문</th><th>공유</th><th>초대 링크 열림</th><th>초대로 참여</th></tr>';
+    days.forEach(function(x){ var r=byDay[x]; h+='<tr><td>'+x+'</td><td>'+r.visit+'</td><td>'+r.plays+'</td><td>'+r.firsts+'</td><td>'+(r.plays?r.acc+'%':'-')+'</td><td>'+(r.base?pct(r.back,r.base)+'%':'-')+'</td><td>'+(r.share_brag+r.share_invite+r.copy)+'</td><td>'+r.invite_open+'</td><td>'+r.invited+'</td></tr>'; });
+    out.innerHTML=h+'</table></div><p class="muted">봇과 검색 로봇은 집계에서 뺍니다. 참여는 문제를 끝까지 푼 경우만 셉니다.</p>';
+  }).catch(function(){ out.innerHTML='<p class="muted">불러오지 못했습니다. 잠시 후 다시 눌러 주세요.</p>'; });
+}
+})();
+</script>
+</body>
+</html>
