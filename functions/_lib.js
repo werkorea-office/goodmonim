@@ -15,7 +15,8 @@ CREATE INDEX IF NOT EXISTS plays_day_gen ON plays(day, gen);
 CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, day TEXT NOT NULL, type TEXT NOT NULL, device TEXT, gen TEXT, ref TEXT, created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS events_day_type ON events(day, type);
 CREATE TABLE IF NOT EXISTS league_splits (gen TEXT PRIMARY KEY, since TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);`;
+CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
+CREATE TABLE IF NOT EXISTS backups (code TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at INTEGER NOT NULL);`;
   await env.DB.batch(sql.split(";\n").map(s => env.DB.prepare(s.replace(/;$/,""))));
   ready = true;
 }

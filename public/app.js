@@ -89,6 +89,32 @@ function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 var S=load(); if(!S.done) S.done={}; if(!S.theme) S.theme="dawn";
 if(!S.device){ S.device=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,"").slice(0,24); save(); }
 var run={i:0,picks:[],answered:false};
+/* ---------- 기록 보관함: 아이폰은 사파리와 바탕화면 아이콘의 저장소가 따로라 서버에 함께 보관 ---------- */
+var STANDALONE=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;
+function newCode(){ var a="abcdefghijkmnpqrstuvwxyz23456789",c=""; for(var i=0;i<12;i++) c+=a[Math.floor(Math.random()*a.length)]; return c; }
+(function(){ var m=location.search.match(/[?&]r=([a-z0-9]{12})/); if(m && STANDALONE && m[1]!==S.sync){ S.sync=m[1]; S.syncPull=1; save(); } })();
+if(!S.sync){ S.sync=newCode(); save(); }
+try{ document.cookie="gm_r="+S.sync+"; path=/; max-age=31536000; samesite=lax"+(location.protocol==="https:"?"; secure":""); }catch(e){}
+function mergeState(a,b){ // a: 이 기기, b: 보관함
+  if(!b||!b.done) return a;
+  var pick=(String(b.last||"")>String(a.last||"")||(b.last===a.last&&(b.streak||0)>(a.streak||0)))?b:a, o=pick===a?b:a;
+  var r=JSON.parse(JSON.stringify(pick)); r.done=Object.assign({},o.done||{},pick.done||{});
+  r.best=Math.max(a.best||0,b.best||0,r.streak||0); r.gen=pick.gen||o.gen; r.theme=a.theme||b.theme; r.large=a.large;
+  r.device=a.device; r.sync=a.sync; r.ref=a.ref||b.ref; r.visitDay=a.visitDay; return r;
+}
+function pushBackup(){ if(PREVIEW) return; try{ var st=JSON.parse(JSON.stringify(S)); delete st.syncPull; fetch("/api/backup",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({code:S.sync,state:st}),keepalive:true}).catch(function(){}); }catch(e){} }
+function pullBackup(done){
+  if(PREVIEW) return done&&done(false);
+  fetch("/api/backup?code="+S.sync).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    var before=JSON.stringify([S.last,S.streak,S.gen,Object.keys(S.done).length]);
+    if(j&&j.state){ S=mergeState(S,j.state); if(!S.done) S.done={}; }
+    delete S.syncPull; save();
+    var changed=before!==JSON.stringify([S.last,S.streak,S.gen,Object.keys(S.done).length]);
+    if(!j||!j.state||changed) pushBackup();
+    done&&done(changed);
+  }).catch(function(){ done&&done(false); });
+}
+
 
 /* ---------- 초대 링크 추적 ---------- */
 (function(){
@@ -195,7 +221,7 @@ function renderGen(){
   h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">고른 세대의 리그에 함께 들어갑니다. 이름과 정확한 나이는 묻지 않습니다.</p><div class="gens">';
   GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(GEN_KO[g])+'<small>'+esc(g)+'</small></strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
   app.innerHTML=h+'</div>';
-  app.querySelectorAll(".gen").forEach(function(b){ b.addEventListener("click",function(){ S.gen=b.getAttribute("data-gen"); save(); run={i:0,picks:[],answered:false}; renderQuiz(); window.scrollTo(0,0); }); });
+  app.querySelectorAll(".gen").forEach(function(b){ b.addEventListener("click",function(){ S.gen=b.getAttribute("data-gen"); save(); pushBackup(); run={i:0,picks:[],answered:false}; renderQuiz(); window.scrollTo(0,0); }); });
 }
 
 /* ---------- 화면 2: 문제 ---------- */
@@ -225,7 +251,7 @@ function finish(set){
   var oks=run.picks.map(function(p,k){ return p===set.qs[k].a; }), score=oks.filter(Boolean).length;
   if(!S.done[TODAY]&&STATUS.kind!=="today"){ applyStreak(); STATUS={kind:"today"}; }
   S.done[TODAY]={score:score,total:set.qs.length,picks:run.picks.slice(),cats:set.en.slice(),oks:oks};
-  save(); updateBadge();
+  save(); updateBadge(); pushBackup();
   if(!PREVIEW){
     var body=JSON.stringify({device:S.device,day:TODAY,gen:S.gen,oks:oks.map(Number),streak:S.streak,ref:S.ref||null});
     var send=function(n){ fetch("/api/play",{method:"POST",headers:{"content-type":"application/json"},body:body}).then(function(r){ if(!r.ok&&n>0) setTimeout(function(){send(n-1);},2000); else loadStats(); }).catch(function(){ if(n>0) setTimeout(function(){send(n-1);},2000); }); };
@@ -426,9 +452,19 @@ function drawInvite(theme){
 }
 
 /* ---------- 시작 ---------- */
-function start(){
+function route(){
   if(S.nextGen&&!S.done[TODAY]){ delete S.gen; delete S.nextGen; save(); }
   if(!S.gen) renderGen(); else if(S.done[TODAY]) renderResult(); else renderQuiz();
+}
+function start(){
+  var firstIcon=!!S.syncPull, waited=false;
+  if(firstIcon){ document.getElementById("app").innerHTML='<div class="panel" style="text-align:center;padding:40px 16px">지난 기록을 불러오고 있습니다…</div>'; }
+  else route();
+  var t=firstIcon?setTimeout(function(){ waited=true; route(); },3500):null;
+  pullBackup(function(changed){
+    if(firstIcon){ if(waited) { if(changed){ STATUS=streakStatus(); updateBadge(); if(run.i===0&&!run.answered) route(); } return; } clearTimeout(t); STATUS=streakStatus(); updateBadge(); route(); return; }
+    if(changed){ STATUS=streakStatus(); updateBadge(); if(run.i===0&&!run.answered&&!run.picks.length) route(); }
+  });
 }
 start();
 })();
