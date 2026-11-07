@@ -40,7 +40,22 @@ window.GM_bindInstall = function(){
   if(b) b.addEventListener("click", startInstall);
   if(l) l.addEventListener("click", function(){ try{ localStorage.setItem("gm.installLater", String(Date.now()+3*864e5)); }catch(e){} hideCard(); });
 };
-function hideCard(){ var c=document.getElementById("installCard"); if(c) c.remove(); }
+function hideCard(){ var c=document.getElementById("installCard"); if(c) c.remove(); var b=document.getElementById("homeBar"); if(b) b.remove(); }
+
+/* 모든 화면 맨 위 고정 버튼: 설치 전까지 항상 보임 */
+function barHidden(){ try{ return Number(localStorage.getItem("gm.barHide")||0) > Date.now(); }catch(e){ return false; } }
+function mountBar(){
+  if(standalone || installedBefore() || barHidden() || document.getElementById("homeBar")) return;
+  var top=document.querySelector("header.top"); if(!top) return;
+  var bar=document.createElement("div"); bar.className="homebar"; bar.id="homeBar";
+  bar.innerHTML='<button type="button" class="hb-main" id="homeBarBtn"><span class="hb-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 8v6M9 11h6"/></svg></span>'
+    +'<span class="hb-txt"><strong>바탕화면에 굿모님 놓기</strong><em>아침마다 아이콘 한 번이면 바로</em></span><span class="hb-go">추가</span></button>'
+    +'<button type="button" class="hb-x" id="homeBarX" aria-label="오늘은 그만 보기">×</button>';
+  top.parentNode.insertBefore(bar, top.nextSibling);
+  document.getElementById("homeBarBtn").addEventListener("click", startInstall);
+  document.getElementById("homeBarX").addEventListener("click", function(){ try{ localStorage.setItem("gm.barHide", String(Date.now()+864e5)); }catch(e){} bar.remove(); });
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", mountBar); else mountBar();
 
 function startInstall(){
   track("install_click");
