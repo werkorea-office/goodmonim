@@ -77,21 +77,21 @@ var MENU='<span class="ico" aria-label="메뉴 버튼"><svg width="16" height="1
 var DOTS='<span class="ico" aria-label="점 세 개 버튼"><svg width="6" height="16" viewBox="0 0 6 16" fill="currentColor"><circle cx="3" cy="2.5" r="1.6"/><circle cx="3" cy="8" r="1.6"/><circle cx="3" cy="13.5" r="1.6"/></svg></span>';
 var isCriOS=/CriOS/.test(UA);
 var safariVer=(function(){ var m=UA.match(/Version\/(\d+)/); return m?Number(m[1]):0; })();
-var DOTS3='<span class="ico" aria-label="더보기 버튼">⋯</span>';
+var MENU3='<span class="ico" aria-label="메뉴 버튼"><svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2h12M2 7h12M2 12h8"/></svg></span>';
 function iosSteps(){
   if(isCriOS) return {t:"바탕화면에 추가", p:"화살표가 가리키는 버튼부터 누르세요.", ios:"top", s:["오른쪽 위 공유 "+SHARE+" 누르기","<strong>홈 화면에 추가</strong> 누르기","<strong>추가</strong> 누르면 끝"]};
-  if(safariVer>=26) return {t:"바탕화면에 추가", p:"화살표가 가리키는 버튼부터 누르세요.", ios:"right", s:["아래 오른쪽 "+DOTS3+" 누르기","공유 "+SHARE+" → <strong>홈 화면에 추가</strong>","<strong>추가</strong> 누르면 끝"]};
+  if(safariVer>=26) return {t:"바탕화면에 추가", p:"화살표가 가리키는 버튼부터 누르세요.", ios:"left", s:["아래 주소창 왼쪽 "+MENU3+" 누르기","<strong>공유</strong> "+SHARE+" → <strong>홈 화면에 추가</strong>","<strong>추가</strong> 누르면 끝"]};
   return {t:"바탕화면에 추가", p:"화살표가 가리키는 버튼부터 누르세요.", ios:"center", s:["아래 가운데 공유 "+SHARE+" 누르기","<strong>홈 화면에 추가</strong> 누르기","<strong>추가</strong> 누르면 끝"]};
 }
 /* 아이폰: 사파리 버튼이 가려지지 않게 위쪽 카드 + 버튼을 가리키는 큰 화살표 */
 function iosSheet(o){
   var bg=document.createElement("div"); bg.className="ios-guide pos-"+o.ios; bg.setAttribute("role","dialog"); bg.setAttribute("aria-modal","true"); bg.setAttribute("aria-label",o.t);
   var h='<div class="ig-card"><button type="button" class="ig-x" aria-label="닫기">×</button><h3>'+o.t+'</h3><p>'+o.p+'</p><ol>'
-    + o.s.map(function(x,i){ return '<li><b>'+(i+1)+'</b><span>'+x+'</span></li>'; }).join('')+'</ol></div>'
+    + o.s.map(function(x,i){ return '<li><b>'+(i+1)+'</b><span>'+x+'</span></li>'; }).join('')+'</ol><button type="button" class="ig-done" id="igDone">이미 추가했어요 · 이 안내 그만 보기</button></div>'
     + '<div class="ig-arrow" aria-hidden="true"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v16M5 12l7 7 7-7"/></svg><span>여기</span></div>';
   bg.innerHTML=h; document.body.appendChild(bg);
   var close=function(){ bg.remove(); };
-  bg.addEventListener("click", close);
+  bg.addEventListener("click", function(e){ if(e.target.id==="igDone"){ try{ localStorage.setItem("gm.installed","1"); }catch(x){} track("install_done"); hideCard(); } close(); });
 }
 function samsungSteps(){ return {t:"갤럭시 바탕화면에 추가하기", p:"삼성 인터넷에서는 이렇게 하시면 됩니다.", s:["화면 아래 오른쪽 메뉴 "+MENU+"를 누르세요","<strong>현재 페이지 추가</strong>를 누르세요","<strong>홈 화면</strong>을 고르면 끝입니다"]}; }
 function androidSteps(){ return {t:"바탕화면에 추가하기", p:"크롬에서는 이렇게 하시면 됩니다.", s:["오른쪽 위 "+DOTS+" 버튼을 누르세요","<strong>홈 화면에 추가</strong>를 누르세요","<strong>설치</strong> 또는 <strong>추가</strong>를 누르면 끝입니다"]}; }
