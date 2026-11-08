@@ -95,6 +95,11 @@ function newCode(){ var a="abcdefghijkmnpqrstuvwxyz23456789",c=""; for(var i=0;i
 (function(){ var m=location.search.match(/[?&]r=([a-z0-9]{12})/); if(m && STANDALONE && m[1]!==S.sync){ S.sync=m[1]; S.syncPull=1; save(); } })();
 if(!S.sync){ S.sync=newCode(); save(); }
 try{ document.cookie="gm_r="+S.sync+"; path=/; max-age=31536000; samesite=lax"+(location.protocol==="https:"?"; secure":""); }catch(e){}
+/* 아이폰 사파리는 바탕화면 추가 때 '지금 주소'를 저장하므로, 주소창에도 내 기록 번호를 넣어 둠 (남의 번호가 붙은 링크로 들어와도 내 번호로 바꿈) */
+if(!STANDALONE && !PREVIEW && window.history && history.replaceState){
+  try{ var qp=new URLSearchParams(location.search); qp.delete("r"); qp.delete("src");
+    var rest=qp.toString(); history.replaceState(null,"","/?src=home&r="+S.sync+(rest?"&"+rest:"")+location.hash); }catch(e){}
+}
 function mergeState(a,b){ // a: 이 기기, b: 보관함
   if(!b||!b.done) return a;
   var pick=(String(b.last||"")>String(a.last||"")||(b.last===a.last&&(b.streak||0)>(a.streak||0)))?b:a, o=pick===a?b:a;
@@ -110,7 +115,8 @@ function pullBackup(done){
     if(j&&j.state){ S=mergeState(S,j.state); if(!S.done) S.done={}; }
     delete S.syncPull; save();
     var changed=before!==JSON.stringify([S.last,S.streak,S.gen,Object.keys(S.done).length]);
-    if(!j||!j.state||changed) pushBackup();
+    var sum=function(x){ return JSON.stringify([x.last||"",x.streak||0,x.gen||"",Object.keys(x.done||{}).sort().join(","),x.best||0,x.shields||0]); };
+    if(!j||!j.state||sum(S)!==sum(j.state)) pushBackup();
     done&&done(changed);
   }).catch(function(){ done&&done(false); });
 }

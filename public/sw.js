@@ -1,5 +1,5 @@
 /* 굿모님 서비스 워커: 홈 화면 설치 + 전파가 약할 때도 첫 화면이 열리게 */
-const V = "gm-v9";
+const V = "gm-v10";
 const CORE = ["/", "/app.js", "/bank.js", "/money.js", "/config.js", "/icon-192.png", "/fonts/wanted/WantedSansVariable.css", "/fonts/pretendard/pretendardvariable-dynamic-subset.css"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
