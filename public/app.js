@@ -10,8 +10,6 @@ var MIN_SAMPLE = 30;
 var GEN_EN={"10대":"Newbies","20대":"Level-Ups","30대":"Almost Max","40대":"Max Level","50대":"Veterans","60대":"Masters","70대":"Grandmasters","80·90대":"Legends"};
 var GEN_KO={"10대":"뉴비","20대":"성장캐","30대":"만렙 직전","40대":"만렙","50대":"베테랑","60대":"명인","70대":"고수","80·90대":"전설"};
 function genFull(g){ return (GEN_KO[g]||"")+"("+g+")"; }
-var CAT_EN=["Proverbs","Spelling","Knowledge","Brain Math","Knowledge"];
-var CAT_KO=["속담·우리말","맞춤법","상식","두뇌 계산","상식"];
 var LINES=[
  {en:"A clear mind makes a bright day.",ko:"맑은 생각이 밝은 하루를 만듭니다."},
  {en:"Small habits, quietly kept, shape a good life.",ko:"조용히 지켜 온 작은 습관이 좋은 삶을 만듭니다."},
@@ -60,27 +58,9 @@ function shortDate(iso){ var d=new Date(iso+"T00:00:00Z"); return (d.getUTCMonth
 /* ---------- 두뇌 계산: 날짜로 자동 생성 (계산이라 오답이 없음) ---------- */
 function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function fmt(n){ return Number(n).toLocaleString("ko-KR"); }
-function mathQ(day){
-  var R=rng(day*7919+13), pick=function(a,b){ return a+Math.floor(R()*(b-a+1)); }, type=day%7, q, ans, e, unit="", dis=[];
-  if(type===0){ var a=pick(1,3), r=pick(2,3), s=[a,a*r,a*r*r,a*r*r*r]; ans=a*r*r*r*r; q=s.join(", ")+", 다음 숫자는?"; e="앞의 숫자에 "+r+"를 곱합니다. "+s[3]+" × "+r+" = "+ans; dis=[ans-r, ans+a*r, s[3]+r*r]; }
-  else if(type===1){ var a1=pick(2,9), d=pick(3,9), s1=[a1,a1+d,a1+2*d,a1+3*d]; ans=a1+4*d; q=s1.join(", ")+", 다음 숫자는?"; e="앞의 숫자에 "+d+"씩 더합니다. "+s1[3]+" + "+d+" = "+ans; dis=[ans+1, ans-2, ans+d]; }
-  else if(type===2){ var x=pick(1,4), y=pick(x,6), f=[x,y]; for(var i=0;i<4;i++) f.push(f.at(-1)+f.at(-2)); ans=f.at(-1)+f.at(-2); q=f.join(", ")+", 다음 숫자는?"; e="앞의 두 숫자를 더합니다. "+f.at(-2)+" + "+f.at(-1)+" = "+ans; dis=[ans-1, ans+2, f.at(-1)*2]; }
-  else if(type===3){ var w=pick(0,6), n=pick(8,20), aw=(w+n)%7; q="오늘이 "+KO_DOW.at(w)+"요일이면 "+n+"일 뒤는 무슨 요일?"; e="7일마다 같은 요일이 돌아옵니다. "+n+"일 = 7×"+Math.floor(n/7)+" + "+(n%7)+"일이라 "+KO_DOW.at(aw)+"요일입니다.";
-    var opts=[aw,(aw+1)%7,(aw+6)%7,(aw+3)%7].map(function(k){ return KO_DOW.at(k)+"요일"; }); return shuffleQ(q,opts,e,R); }
-  else if(type===4){ var p=pick(3,20)*100, k=pick(2,4), t=pick(2,4), c=p*k; ans=c*t; q="귤 "+k+"개에 "+fmt(c)+"원이면 "+(k*t)+"개는 얼마?"; e=(k*t)+"개는 "+k+"개 묶음이 "+t+"개입니다. "+fmt(c)+" × "+t+" = "+fmt(ans)+"원"; unit="원"; dis=[ans-c, ans+c, ans+p]; }
-  else if(type===5){ var h=pick(1,5); ans=h*30; q="시계가 정확히 "+h+"시일 때 두 바늘 사이의 작은 각도는?"; e="한 시간 칸은 30도입니다. "+h+"칸이니 "+ans+"도입니다."; unit="도"; dis=[ans+30, ans+60, ans===30?45:ans-30]; }
-  else { var m=pick(6,15); ans=m*(m+1)/2; q="1부터 "+m+"까지 모두 더하면?"; e="(1 + "+m+") × "+m+" ÷ 2 = "+ans; dis=[ans-m, ans+m, ans+1]; }
-  var seen={}; seen[ans]=1; var list=[ans]; dis.forEach(function(v){ if(v>0&&!seen[v]){ seen[v]=1; list.push(v); } }); var bump=1; while(list.length<4){ var v2=ans+bump*(bump%2?1:-1)*3; if(v2>0&&!seen[v2]){ seen[v2]=1; list.push(v2); } bump++; }
-  return shuffleQ(q, list.slice(0,4).map(function(v){ return fmt(v)+unit; }), e, R);
-}
 function shuffleQ(q,opts,e,R){ var order=[0,1,2,3].map(function(i){ return [R(),i]; }).sort(function(a,b){ return a[0]-b[0]; }).map(function(x){ return x[1]; }); return {q:q,o:order.map(function(i){ return opts.at(i); }),a:order.indexOf(0),e:e}; }
 
-function todaySet(gen){
-  var qs=[A[DAY%A.length],B[DAY%B.length],C[DAY%C.length],mathQ(DAY),C[(DAY+21)%C.length]];
-  var en=CAT_EN.slice(), ko=CAT_KO.slice(), pool=BONUS[gen]||[];
-  if(pool.length){ qs.push(pool[DAY%pool.length]); en.push("Memory Lane"); ko.push(gen+" 추억 문제"); }
-  return {qs:qs,en:en,ko:ko};
-}
+function todaySet(gen){ return window.GM_ENGINE.setFor(DAY,gen); } /* 출제 규칙은 engine.js */
 
 /* ---------- 저장 (이 기기 안) ---------- */
 var KEY="goodmonim.v3";
@@ -210,7 +190,7 @@ function treeSVG(k){
 }
 function weekHTML(){ var out=''; for(var i=6;i>=0;i--){ var d=kst(-i), dt=new Date(d+"T00:00:00Z"); out+='<div>'+KO_DOW.at(dt.getUTCDay())+'<b class="'+(S.done[d]?'on':'')+(i===0?' today':'')+'"></b></div>'; } return out; }
 function skillsHTML(){
-  var keys=[["Proverbs","속담·우리말"],["Spelling","맞춤법"],["Knowledge","상식"],["Brain Math","두뇌 계산"],["Memory Lane","추억"]], tot={}, ok={};
+  var keys=[["Proverbs","속담·우리말"],["Spelling","맞춤법"],["Knowledge","상식"],["Brain Math","두뇌 계산"],["Everyday Math","생활 계산"],["Memory Lane","추억"]], tot={}, ok={};
   Object.keys(S.done).forEach(function(d){ var r=S.done[d]; if(!r.cats) return; r.cats.forEach(function(c,k){ tot[c]=(tot[c]||0)+1; if(r.oks[k]) ok[c]=(ok[c]||0)+1; }); });
   return keys.map(function(kv){ var t=tot[kv[0]]||0, p=t?Math.round((ok[kv[0]]||0)/t*100):0; return '<div class="row"><span>'+kv[1]+'<em>'+kv[0]+'</em></span><span class="bar"><i style="width:'+p+'%"></i></span><span class="pct">'+(t?p+'%':'-')+'</span></div>'; }).join('');
 }

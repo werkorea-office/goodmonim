@@ -45,3 +45,11 @@ npm install
 npm run dev    # http://localhost:8788  (관리자 키: .dev.vars 의 ADMIN_KEY)
 ```
 `?preview=1`을 붙이면 연속 출석 상황 바꿔 보기, 나무 단계 미리보기 도구가 나옵니다.
+
+## 문제 추가·관리 (반복 방지 구조)
+- 문제 원본: `scripts/src/A_proverbs.txt`(속담) · `B_spelling.txt`(맞춤법) · `C_trivia.txt`(상식) · `D_bonus.txt`(세대 추억)
+- 형식: `문제 | 정답 | 오답1 | 오답2 | 오답3 | 해설` (정답 위치는 자동으로 섞임)
+- **맨 아래에 추가만** 합니다. 잘못된 문제는 지우지 말고 줄 앞에 `~`를 붙여 은퇴시킵니다.
+- 추가 후 `npm run bank` → `public/bank2.js`와 `scripts/bank.lock.json`이 갱신됩니다. 새 문제는 다음 날부터 출제됩니다.
+- 출제 규칙(`public/engine.js`): 가장 오래전에 나온 문제부터. 계산 문제는 숫자 조합을 겹치지 않게 돌림.
+- 배포 때 `npm run build`가 1년치를 미리 돌려 보고, 속담·맞춤법·상식 100일 / 계산 365일 / 세대 추억 30일 안에 같은 문제가 나오면 **배포를 멈춥니다**.
