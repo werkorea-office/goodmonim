@@ -1,0 +1,22 @@
+# 굿모님 아침 알림 예약 실행 — 한국 시각 아침 7시, 밤 9시
+# 발송 주소는 정해진 시간대에만, 한 사람당 하루 아침 1번·밤 1번만 보내므로 비밀값이 필요 없습니다.
+name: 아침 알림 발송
+on:
+  schedule:
+    - cron: "0 22 * * *"   # 07:00 KST
+    - cron: "0 12 * * *"   # 21:00 KST
+  workflow_dispatch:
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 남은 사람이 없을 때까지 묶음 발송
+        run: |
+          for i in $(seq 1 300); do
+            r=$(curl -s -m 30 https://goodmonim.co.kr/api/push/run || echo '{}')
+            echo "$r"
+            rem=$(echo "$r" | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("remaining",0) if d.get("slot") else 0)' 2>/dev/null || echo 0)
+            [ "$rem" = "0" ] && break
+            sleep 1
+          done

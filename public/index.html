@@ -320,6 +320,8 @@ footer p{margin:8px 0 0}
 @keyframes igBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(12px)}}
 @keyframes igBounceC{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,12px)}}
 @keyframes igBounceUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.tomorrow .tm-push{margin-top:10px;background:#E5C27C;color:#1B2250}
+.tm-push-note{margin:8px 0 0;font-size:.85rem;opacity:.9}
 .biz{line-height:1.7}
 .biz a{color:var(--muted)}
 </style>
@@ -340,7 +342,7 @@ footer p{margin:8px 0 0}
   <main id="app" aria-live="polite"><noscript>굿모님은 자바스크립트를 켜야 이용할 수 있습니다.</noscript></main>
   <footer>
     <p>굿모님은 매일 두뇌 운동을 돕는 퀴즈이며 의료 서비스가 아닙니다. 기록은 이 기기에 저장되며, 세대별 집계에는 이름이나 연락처를 쓰지 않습니다.</p>
-    <p class="biz">디시전에스 · 대표 이덕희 · 사업자등록번호 666-45-01149 · 통신판매업신고 제2026-충북충주-0005호<br>충청북도 충주시 갱고개로 235-1, 3층 · <a href="/privacy">개인정보처리방침</a></p>
+    <p class="biz">디시전에스 · 대표 이덕희 · 사업자등록번호 666-45-01149 · 통신판매업신고 제2026-충북충주-0005호<br>충청북도 충주시 갱고개로 235-1, 3층 · <a href="/privacy">개인정보처리방침</a> · <a href="#" id="pushOff" hidden>아침 알림 끄기</a></p>
   </footer>
 </div>
 <script src="/config.js"></script>
@@ -350,5 +352,6 @@ footer p{margin:8px 0 0}
 <script src="/money.js"></script>
 <script src="/app.js"></script>
 <script src="/install.js"></script>
+<script src="/push.js"></script>
 </body>
 </html>

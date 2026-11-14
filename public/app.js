@@ -305,6 +305,7 @@ function renderResult(){
     h+='<p class="tm-sub">어디서, 어떻게 받는지는 <b>내일 아침 굿모님에서만</b> 열립니다.'+(again?' 놓치면 이 정보는 <b>'+again+'일 뒤</b>에야 다시 돌아옵니다.':'')+'</p>';
     h+='<p class="tm-streak">내일 오시면 <b>연속 '+((S.streak||1)+1)+'일</b>째'+(((S.streak||1)+1)%7===0?' · 보호막 1개를 받습니다':'')+'</p>';
     if(canInstall) h+='<button class="tm-btn" type="button" id="tmInstall">내일 아침 잊지 않게 바탕화면에 추가</button>';
+    if(window.GM_pushCard) h+=window.GM_pushCard();
     h+='</div>';
   }
   var days=Object.keys(S.done).length, si=stageIndex(days), nx=STAGES[si+1];
@@ -329,6 +330,7 @@ function renderResult(){
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
   app.innerHTML=h;
   var ti=document.getElementById("tmInstall"); if(ti&&window.GM_openInstall) ti.addEventListener("click",window.GM_openInstall);
+  if(window.GM_bindPush) window.GM_bindPush();
   if(window.GM_tmTimer) clearInterval(window.GM_tmTimer); window.GM_tmTimer=setInterval(function(){ var c=document.getElementById("tmCount"); if(c) c.textContent=untilMidnight(); },30000);
   if(PREVIEW) document.getElementById("rankBox").innerHTML='<div class="pending">미리보기 화면입니다. 실제 사이트에서는 뉴비(10·20대), 만렙(30·40대), 명인(50·60대), 전설(70대 이상) 4개 리그로 시작하고, 리그마다 30명이 모이면 순위가 열립니다.</div>'; else if(STATS) fillStats(); else loadStats();
   paint();
