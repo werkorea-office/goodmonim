@@ -322,6 +322,26 @@ footer p{margin:8px 0 0}
 @keyframes igBounceUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .tomorrow .tm-push{margin-top:10px;background:#E5C27C;color:#1B2250}
 .tm-push-note{margin:8px 0 0;font-size:.85rem;opacity:.9}
+.greet-bar{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 14px;padding:12px 14px;border:1px solid rgba(210,85,47,.25);border-radius:18px;background:linear-gradient(120deg,#FFF1E6,#FFE3D3);color:#1E2440;font:inherit;text-align:left;cursor:pointer}
+.greet-bar .gb-ico{font-size:1.6rem;line-height:1}
+.greet-bar .gb-txt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.greet-bar .gb-txt strong{font-size:1rem;font-weight:800}
+.greet-bar .gb-txt em{font-style:normal;font-size:.8rem;color:#7A4B3A}
+.greet-bar .gb-go{flex:none;background:#D2552F;color:#fff;font-weight:800;font-size:.86rem;border-radius:999px;padding:8px 14px}
+.greet-sheet{display:grid;gap:10px;max-height:92vh;overflow:auto}
+.greet-sheet h3{margin:0;font-size:1.2rem}
+.greet-help{margin:0;color:var(--muted);font-size:.88rem}
+.greet-img{aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:#f2eee9;display:grid;place-items:center;color:var(--muted)}
+.greet-img img{width:100%;height:100%;display:block}
+.greet-sheet .btn{text-align:center;text-decoration:none;margin-top:0}
+.greet-sheet .btn.ghost{display:flex;justify-content:center;width:100%;border:1px solid var(--line);border-radius:16px;padding:15px;background:transparent;color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.greet-sheet .btn.primary[disabled]{opacity:.5}
+.greet-status{margin:0;font-size:.88rem;color:var(--muted);min-height:1.2em}
+.tip a{color:#fff;text-decoration:none}
+.tip-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tip .tip-acts .tip-go{margin-top:0}
+.tip-share{padding:10px 16px;border-radius:12px;border:0;background:#fff;color:#C8422B;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer}
+.tip-recv{margin:0 0 14px}
 .biz{line-height:1.7}
 .biz a{color:var(--muted)}
 </style>

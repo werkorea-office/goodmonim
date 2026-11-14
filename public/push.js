@@ -52,5 +52,5 @@ if(supported && on() && Notification.permission==="granted"){
   var t=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
   try{ if(localStorage.getItem("gm.pushSync")!==t){ navigator.serviceWorker.ready.then(function(reg){ return reg.pushManager.getSubscription().then(function(s){ return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(KEY)}); }); }).then(function(s){ return save(s); }).then(function(){ localStorage.setItem("gm.pushSync",t); }).catch(function(){}); } }catch(e){}
 }
-if(/[?&]src=push\b/.test(location.search)) track("push_click");
+if((window.GM_ENTRY||{}).src==="push") track("push_click");
 })();

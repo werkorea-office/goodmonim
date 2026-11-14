@@ -69,6 +69,8 @@ function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 var S=load(); if(!S.done) S.done={}; if(!S.theme) S.theme="dawn";
 if(!S.device){ S.device=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,"").slice(0,24); save(); }
 var run={i:0,picks:[],answered:false};
+/* ---------- 들어온 경로 (주소창 정리 전에 기억) ---------- */
+var ENTRY={src:(location.search.match(/[?&]src=([a-z]+)/)||[])[1]||"", m:(location.search.match(/[?&]m=([a-z0-9]{3,12})/)||[])[1]||""}; window.GM_ENTRY=ENTRY;
 /* ---------- 기록 보관함: 아이폰은 사파리와 바탕화면 아이콘의 저장소가 따로라 서버에 함께 보관 ---------- */
 var STANDALONE=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;
 function newCode(){ var a="abcdefghijkmnpqrstuvwxyz23456789",c=""; for(var i=0;i<12;i++) c+=a[Math.floor(Math.random()*a.length)]; return c; }
@@ -77,7 +79,7 @@ if(!S.sync){ S.sync=newCode(); save(); }
 try{ document.cookie="gm_r="+S.sync+"; path=/; max-age=31536000; samesite=lax"+(location.protocol==="https:"?"; secure":""); }catch(e){}
 /* 아이폰 사파리는 바탕화면 추가 때 '지금 주소'를 저장하므로, 주소창에도 내 기록 번호를 넣어 둠 (남의 번호가 붙은 링크로 들어와도 내 번호로 바꿈) */
 if(!STANDALONE && !PREVIEW && window.history && history.replaceState){
-  try{ var qp=new URLSearchParams(location.search); qp.delete("r"); qp.delete("src");
+  try{ var qp=new URLSearchParams(location.search); qp.delete("r"); qp.delete("src"); qp.delete("m");
     var rest=qp.toString(); history.replaceState(null,"","/?src=home&r="+S.sync+(rest?"&"+rest:"")+location.hash); }catch(e){}
 }
 function mergeState(a,b){ // a: 이 기기, b: 보관함
@@ -107,6 +109,7 @@ function pullBackup(done){
   var m=location.search.match(/[?&]ref=([a-z0-9]{6,24})/i);
   if(m && !S.ref && m[1]!==S.device.slice(0,10)){ S.ref=m[1]; save(); track("invite_open",{ref:m[1]}); }
   if(S.visitDay!==TODAY){ S.visitDay=TODAY; save(); track("visit",{}); }
+  if(ENTRY.src==="card") track("open_card",{}); else if(ENTRY.src==="money") track("open_money",{});
 })();
 function track(type,extra){
   if(PREVIEW) return;
@@ -198,7 +201,7 @@ function skillsHTML(){
 /* ---------- 화면 1: 소개 + 세대 고르기 ---------- */
 function renderGen(){
   setRise(.2);
-  var h='<div class="section-title" style="margin-top:4px"><h2>굿모님은 이런 곳입니다</h2><span>What is GoodMonim</span></div><div class="panel"><div class="intro">';
+  var h=receivedHTML()+greetBar()+'<div class="section-title" style="margin-top:4px"><h2>굿모님은 이런 곳입니다</h2><span>What is GoodMonim</span></div><div class="panel"><div class="intro">';
   h+='<div class="item"><span class="num">i</span><div><h3>매일 아침 5문제, 1분</h3><p>속담, 맞춤법, 상식, 두뇌 계산. 앱 설치도 회원가입도 없습니다.</p></div></div>';
   h+='<div class="item"><span class="num">ii</span><div><h3>연속 기록을 지켜 드립니다</h3><p>7일마다 보호막을 받고, 하루이틀 쉬어도 기록이 이어집니다.</p></div></div>';
   h+='<div class="item"><span class="num">iii</span><div><h3>나의 아침 나무가 자랍니다</h3><p>푼 날이 쌓일수록 씨앗이 새싹, 꽃나무, 큰 나무로 자랍니다.</p></div></div>';
@@ -215,7 +218,7 @@ function renderQuiz(){
   var set=todaySet(S.gen), n=set.qs.length, q=set.qs[run.i];
   setRise(.2+.8*(run.i/n));
   var bars=''; for(var k=0;k<n;k++){ var c=k<run.picks.length?(run.picks[k]===set.qs[k].a?"ok":"no"):(k===run.i?"on":""); bars+='<span class="'+c+'"></span>'; }
-  var h=(run.i===0?statusNotice():'')+'<div class="panel"><div class="progress" aria-hidden="true">'+bars+'</div>';
+  var h=(run.i===0?receivedHTML()+greetBar()+statusNotice():'')+'<div class="panel"><div class="progress" aria-hidden="true">'+bars+'</div>';
   h+='<div class="qmeta"><span class="cat">'+esc(set.en[run.i])+' <small>· '+esc(set.ko[run.i])+'</small></span><span class="num">'+(run.i+1)+' / '+n+'</span></div>';
   h+='<p class="q" id="qtext">'+esc(q.q)+'</p><div class="opts" role="group" aria-labelledby="qtext">';
   q.o.forEach(function(o,j){ h+='<button class="opt" type="button" data-j="'+j+'"><b>'+["i","ii","iii","iv"].at(j)+'</b><span>'+esc(o)+'</span></button>'; });
@@ -237,6 +240,7 @@ function finish(set){
   var oks=run.picks.map(function(p,k){ return p===set.qs[k].a; }), score=oks.filter(Boolean).length;
   if(!S.done[TODAY]&&STATUS.kind!=="today"){ applyStreak(); STATUS={kind:"today"}; }
   S.done[TODAY]={score:score,total:set.qs.length,picks:run.picks.slice(),cats:set.en.slice(),oks:oks};
+  if(ENTRY.m) S.seenM=ENTRY.m;
   save(); updateBadge(); pushBackup();
   if(!PREVIEW){
     var body=JSON.stringify({device:S.device,day:TODAY,gen:S.gen,oks:oks.map(Number),streak:S.streak,ref:S.ref||null});
@@ -297,7 +301,8 @@ function renderResult(){
   h+='<ol class="review">'+set.qs.map(function(q,k){ var ok=r.oks[k]; return '<li class="'+(ok?'ok':'no')+'"><span class="mk">'+(ok?'O':'X')+'</span><span class="tx">'+esc(q.q)+'<em>정답: '+esc(q.o[q.a])+'</em></span><span class="rt" id="qr'+k+'"></span></li>'; }).join('')+'</ol></div>';
 
   var mo=moneyOn(DAY,S.gen)||tipFor(S.gen), tm=moneyOn(DAY+1,S.gen), again=tm?nextSame(tm,DAY+1,S.gen):null;
-  h+='<a class="tip" href="'+mo.url+'" target="_blank" rel="noopener"><span class="tip-flag">오늘의 돈 정보 · 올해 '+dayOfYear()+'번째</span><span class="tip-site">'+esc(mo.site)+' · 공식 사이트</span><strong>'+esc(mo.t)+'</strong><span class="tip-d">'+esc(mo.d)+'</span><span class="tip-go">공식 사이트에서 바로 확인하기 →</span></a><p class="note tip-note">조회는 모두 무료입니다. 굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. "수수료를 내면 찾아 준다"는 문자는 열지 마세요.</p>';
+  h+='<div class="tip"><span class="tip-flag">오늘의 돈 정보 · 올해 '+dayOfYear()+'번째</span><span class="tip-site">'+esc(mo.site)+' · 공식 사이트</span><strong>'+esc(mo.t)+'</strong><span class="tip-d">'+esc(mo.d)+'</span><div class="tip-acts"><a class="tip-go" href="'+mo.url+'" target="_blank" rel="noopener">공식 사이트에서 확인하기 →</a><button class="tip-share" type="button" data-m="'+moneyId(mo)+'">가족에게 이 정보 보내기</button></div></div><p class="note tip-note">조회는 모두 무료입니다. 굿모님은 신청을 대신 받거나 개인정보를 묻지 않습니다. "수수료를 내면 찾아 준다"는 문자는 열지 마세요.</p>';
+  h+=greetBar();
   if(tm){
     var canInstall=window.GM_installCard&&window.GM_installCard()!=="";
     h+='<div class="tomorrow"><div class="tm-top"><span class="tm-lock"><svg width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1" y="7" width="12" height="8" rx="2" fill="currentColor"/><path d="M4 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>내일 아침 공개</span><span class="tm-cd">공개까지 <b id="tmCount">'+untilMidnight()+'</b></span></div>';
@@ -444,6 +449,81 @@ function route(){
   if(S.nextGen&&!S.done[TODAY]){ delete S.gen; delete S.nextGen; save(); }
   if(!S.gen) renderGen(); else if(S.done[TODAY]) renderResult(); else renderQuiz();
 }
+/* ---------- 아침 인사 카드 · 돈 정보 보내기 (이용자가 단톡방에 퍼뜨리는 통로) ---------- */
+var GREET_PAL=[ // 요일마다 바뀌는 색 (일~토)
+  {top:"#FFD3B6",bot:"#FFF6EC",acc:"#D2552F"},{top:"#C6EED6",bot:"#F3FFF7",acc:"#1F7A4D"},{top:"#CBE3FF",bot:"#F3F8FF",acc:"#2A5FB0"},
+  {top:"#FFD0DD",bot:"#FFF5F8",acc:"#C23A62"},{top:"#E1D5FF",bot:"#F8F5FF",acc:"#5B3FB2"},{top:"#FFE6A3",bot:"#FFFBEE",acc:"#A86A00"},{top:"#FFC8B8",bot:"#FFF3EE",acc:"#C24A2C"}];
+var WISH=["행복한 주말 보내세요","힘찬 한 주 시작하세요","건강한 하루 되세요","오늘도 웃는 일 가득하세요","마음 따뜻한 하루 되세요","기분 좋은 금요일 되세요","행복한 주말 보내세요"];
+var KO_DATE=(DT.getUTCMonth()+1)+"월 "+DT.getUTCDate()+"일 "+["일","월","화","수","목","금","토"][DT.getUTCDay()]+"요일";
+function cardUrl(src,extra){ return SITE+"/?ref="+S.device.slice(0,10)+"&src="+src+(extra||""); }
+function drawGreet(){
+  return loadFonts().then(function(){ return document.fonts&&document.fonts.load?document.fonts.load('800 150px "Wanted Sans Variable"',"좋은아침입니다"+WISH.join("")+KO_DATE).catch(function(){}):null; }).then(function(){
+    var W=1080,H=1080,P=88,c=document.createElement("canvas"); c.width=W; c.height=H; var g=c.getContext("2d"), C=GREET_PAL[DT.getUTCDay()], F='"Wanted Sans Variable","Pretendard Variable",sans-serif';
+    var gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,C.top); gr.addColorStop(1,C.bot); g.fillStyle=gr; g.fillRect(0,0,W,H);
+    // 떠오르는 해와 빛
+    var sx=W-210,sy=H-250, glow=g.createRadialGradient(sx,sy,40,sx,sy,520); glow.addColorStop(0,"rgba(255,190,110,.55)"); glow.addColorStop(1,"rgba(255,190,110,0)"); g.fillStyle=glow; g.fillRect(0,0,W,H);
+    var sun=g.createRadialGradient(sx-40,sy-40,20,sx,sy,190); sun.addColorStop(0,"#FFE3A8"); sun.addColorStop(.55,"#FFB061"); sun.addColorStop(1,"#FF8A4C"); g.fillStyle=sun; g.beginPath(); g.arc(sx,sy,190,0,Math.PI*2); g.fill();
+    // 부드러운 언덕
+    g.fillStyle="rgba(255,255,255,.55)"; g.beginPath(); g.moveTo(0,H-170); g.quadraticCurveTo(W*.35,H-290,W*.7,H-170); g.quadraticCurveTo(W*.88,H-120,W,H-160); g.lineTo(W,H); g.lineTo(0,H); g.fill();
+    g.fillStyle="rgba(255,255,255,.8)"; g.beginPath(); g.moveTo(0,H-90); g.quadraticCurveTo(W*.5,H-180,W,H-80); g.lineTo(W,H); g.lineTo(0,H); g.fill();
+    // 글자
+    g.textAlign="left"; g.fillStyle=C.acc; g.font='700 40px '+F; g.fillText(KO_DATE,P,P+40);
+    g.fillStyle="rgba(30,36,64,.55)"; g.font='600 22px '+F; spaced(g,"GOOD MORNING",P,P+84,6);
+    g.fillStyle="#1E2440"; g.font='800 156px '+F; g.fillText("좋은 아침",P-6,P+290); g.fillText("입니다",P-6,P+460);
+    g.fillStyle=C.acc; g.font='800 54px '+F; g.fillText(WISH[DT.getUTCDay()],P,P+570);
+    g.fillStyle="rgba(30,36,64,.8)"; g.font='600 38px '+F; var y=P+650; wrapKo(g,LINE.ko,W-2*P-330).forEach(function(l){ g.fillText(l,P,y); y+=54; });
+    g.fillStyle="rgba(30,36,64,.55)"; g.font='italic 500 34px "Cormorant Garamond", serif'; wrapKo(g,LINE.en,W-2*P-330).forEach(function(l){ g.fillText(l,P,y+6); y+=44; });
+    // 아래 안내
+    g.font='700 30px '+F; var label="굿모님 · 오늘의 두뇌 퀴즈 1분", lw=g.measureText(label).width; pill(g,P,H-P-62,lw+56,62,"#1E2440"); g.fillStyle="#fff"; g.fillText(label,P+28,H-P-20);
+    g.fillStyle="rgba(30,36,64,.7)"; g.font='600 26px '+F; g.textAlign="right"; g.fillText("goodmonim.co.kr",W-P,H-P-20);
+    return c.toDataURL("image/png");
+  });
+}
+function greetBar(){ return '<button class="greet-bar" type="button" data-act="greet"><span class="gb-ico" aria-hidden="true">🌅</span><span class="gb-txt"><strong>오늘의 아침 인사 카드</strong><em>'+esc(KO_DATE)+' · 가족·친구 단톡방에 보내 보세요</em></span><span class="gb-go">보내기</span></button>'; }
+function openGreet(){
+  var bgEl=document.createElement("div"); bgEl.className="sheet-bg"; bgEl.innerHTML='<div class="sheet greet-sheet" role="dialog" aria-modal="true" aria-label="아침 인사 카드"><h3>오늘의 아침 인사 카드</h3><p class="greet-help">사진과 함께 굿모님 주소가 보내집니다. 받은 분도 바로 오늘의 퀴즈를 풀 수 있어요.</p><div class="greet-img"><span>카드를 만드는 중…</span></div><button class="btn primary" type="button" data-act="greet-send" disabled>카톡·문자로 보내기</button><a class="btn ghost" data-act="greet-save" download="goodmonim-'+TODAY+'.png" href="#" aria-disabled="true">사진으로 저장</a><button class="btn ghost" type="button" data-act="sheet-close">닫기</button><p class="greet-status" id="greetStatus" role="status"></p></div>';
+  document.body.appendChild(bgEl);
+  bgEl.addEventListener("click",function(e){ if(e.target===bgEl||e.target.closest('[data-act="sheet-close"]')) bgEl.remove(); });
+  drawGreet().then(function(u){
+    bgEl.querySelector(".greet-img").innerHTML='<img alt="'+esc(KO_DATE)+' 좋은 아침입니다 인사 카드" src="'+u+'">';
+    var send=bgEl.querySelector('[data-act="greet-send"]'), sv=bgEl.querySelector('[data-act="greet-save"]'); send.disabled=false; sv.href=u; sv.removeAttribute("aria-disabled");
+    send.addEventListener("click",function(){ shareGreet(u); });
+    sv.addEventListener("click",function(){ track("share_card",{}); });
+  });
+}
+function shareGreet(u){
+  var url=cardUrl("card"), txt="좋은 아침입니다 🌅 "+WISH[DT.getUTCDay()]+".\n"+LINE.ko+"\n\n오늘의 두뇌 퀴즈 1분 👉 "+url, st=document.getElementById("greetStatus");
+  track("share_card",{});
+  if(window.Kakao&&CFG.kakaoKey){ try{ if(!Kakao.isInitialized()) Kakao.init(CFG.kakaoKey);
+      Kakao.Share.sendDefault({objectType:"feed",content:{title:"좋은 아침입니다 · "+KO_DATE,description:WISH[DT.getUTCDay()]+". "+LINE.ko,imageUrl:SITE+"/og.jpg",link:{mobileWebUrl:url,webUrl:url}},buttons:[{title:"오늘의 퀴즈 풀기",link:{mobileWebUrl:url,webUrl:url}}]}); return; }catch(e){} }
+  if(navigator.share){ var data={text:txt}; try{ var f=dataUrlToFile(u,"goodmonim-"+TODAY+".png"); if(navigator.canShare&&navigator.canShare({files:[f],text:txt})) data.files=[f]; else data.url=url; }catch(e){ data.url=url; }
+    navigator.share(data).then(function(){ if(st) st.textContent="보냈습니다. 좋은 아침 되세요!"; }).catch(function(){}); return; }
+  try{ navigator.clipboard.writeText(txt).then(function(){ if(st) st.textContent="문구를 복사했습니다. '사진으로 저장'한 카드와 함께 단톡방에 붙여 넣으세요."; }); }catch(e){ if(st) st.textContent="'사진으로 저장'을 눌러 카드를 저장한 뒤 보내 주세요."; }
+}
+/* 돈 정보: 번호로 찾고, 가족에게 보내고, 받은 사람에게 보여 주기 */
+function moneyId(it){ var h=5381,t=String(it&&it.t||""); for(var i=0;i<t.length;i++) h=((h<<5)+h+t.charCodeAt(i))>>>0; return h.toString(36); }
+function findMoney(id){ var all=[].concat(MONEY.hidden||[],MONEY.gen||[],MONEY.calendar||[]); for(var i=0;i<all.length;i++) if(moneyId(all[i])===id) return all[i]; return null; }
+function shareMoney(id){
+  var it=findMoney(id); if(!it) return; var url=cardUrl("money","&m="+id);
+  var txt="[굿모님 · 오늘의 돈 정보]\n"+it.t+"\n"+it.d+"\n\n공식 사이트에서 무료 조회: "+it.url+"\n\n매일 아침 돈 정보와 1분 두뇌 퀴즈 👉 "+url;
+  track("share_money",{});
+  if(window.Kakao&&CFG.kakaoKey){ try{ if(!Kakao.isInitialized()) Kakao.init(CFG.kakaoKey);
+      Kakao.Share.sendDefault({objectType:"feed",content:{title:"오늘의 돈 정보 · "+it.t,description:it.d,imageUrl:SITE+"/og.jpg",link:{mobileWebUrl:url,webUrl:url}},buttons:[{title:"자세히 보기",link:{mobileWebUrl:url,webUrl:url}}]}); return; }catch(e){} }
+  if(navigator.share){ navigator.share({text:txt}).catch(function(){}); return; }
+  try{ navigator.clipboard.writeText(txt).then(function(){ alertBox("문구를 복사했습니다. 가족 단톡방에 붙여 넣으세요."); }); }catch(e){}
+}
+function alertBox(t){ var el=document.getElementById("status"); if(el){ el.textContent=t; } }
+var RECEIVED=ENTRY.m?findMoney(ENTRY.m):null;
+function receivedHTML(){
+  if(!RECEIVED || S.seenM===ENTRY.m) return "";
+  var it=RECEIVED;
+  return '<div class="tip tip-recv"><span class="tip-flag">가족이 보낸 돈 정보</span><span class="tip-site">'+esc(it.site)+' · 공식 사이트</span><strong>'+esc(it.t)+'</strong><span class="tip-d">'+esc(it.d)+'</span><div class="tip-acts"><a class="tip-go" href="'+it.url+'" target="_blank" rel="noopener">공식 사이트에서 확인하기 →</a></div><span class="tip-d">굿모님에서는 매일 아침 이런 정보와 1분 두뇌 퀴즈가 열립니다. 아래에서 오늘의 문제를 풀어 보세요.</span></div>';
+}
+document.addEventListener("click",function(e){
+  var g=e.target.closest('[data-act="greet"]'); if(g){ openGreet(); return; }
+  var m=e.target.closest(".tip-share"); if(m){ shareMoney(m.getAttribute("data-m")); }
+});
+
 function start(){
   var firstIcon=!!S.syncPull, waited=false;
   if(firstIcon){ document.getElementById("app").innerHTML='<div class="panel" style="text-align:center;padding:40px 16px">지난 기록을 불러오고 있습니다…</div>'; }
