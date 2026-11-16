@@ -344,6 +344,24 @@ footer p{margin:8px 0 0}
 .tip-recv{margin:0 0 14px}
 .biz{line-height:1.7}
 .biz a{color:var(--muted)}
+/* 서비스 묶음 배너 */
+.dsf{margin:32px 0;padding:22px 20px;border-radius:22px;background:#FFFBF2;border:1px solid #F0E2C4;color:#141B3A;text-align:left;word-break:keep-all;box-sizing:border-box}
+.dsf *{box-sizing:border-box}
+.dsf .dsf-head h2{margin:0;padding:0;border:0;font-size:1.12rem;font-weight:800;color:#141B3A;letter-spacing:-.01em}
+.dsf .dsf-head p{margin:4px 0 14px;font-size:.84rem;color:#6B6455}
+.dsf .dsf-grid{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.dsf .dsf-card{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fff;border:1px solid #EFE4CC;text-decoration:none;color:#141B3A;transition:border-color .15s,box-shadow .15s,transform .15s}
+.dsf .dsf-card:hover,.dsf .dsf-card:focus-visible{border-color:#DC912F;box-shadow:0 6px 18px rgba(212,138,44,.18);transform:translateY(-1px)}
+.dsf .dsf-ico{flex:none;width:52px;height:52px;border-radius:13px;background:linear-gradient(180deg,#F7C658,#DC912F);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#111938;font-weight:900;line-height:1.05;letter-spacing:-.03em;font-family:inherit}
+.dsf .dsf-ico i{display:block;width:62%;height:3px;margin-top:4px;border-radius:2px;background:#111938}
+.dsf .dsf-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dsf .dsf-txt strong{font-size:1rem;font-weight:800;color:#141B3A}
+.dsf .dsf-txt strong small{display:inline-block;white-space:nowrap;margin-left:5px;font-size:.7rem;font-weight:600;color:#8A7F68;letter-spacing:.02em}
+.dsf .dsf-txt em{font-style:normal;font-size:.86rem;font-weight:700;color:#B4651A}
+.dsf .dsf-txt span{font-size:.8rem;line-height:1.45;color:#5E5A50}
+.dsf .dsf-go{flex:none;font-size:.8rem;font-weight:800;color:#141B3A;white-space:nowrap}
+@media (max-width:760px){.dsf .dsf-grid{grid-template-columns:1fr}.dsf{padding:20px 14px}.dsf .dsf-go{font-size:0}.dsf .dsf-go::after{content:'→';font-size:1.1rem;color:#B4651A}}
+@media (min-width:761px){.dsf .dsf-card{flex-direction:column;align-items:flex-start}.dsf .dsf-go{margin-top:6px}}
 </style>
 </head>
 <body>
@@ -370,6 +388,7 @@ footer p{margin:8px 0 0}
 <script src="/bank2.js"></script>
 <script src="/engine.js"></script>
 <script src="/money.js"></script>
+<script src="/family.js"></script>
 <script src="/app.js"></script>
 <script src="/install.js"></script>
 <script src="/push.js"></script>
