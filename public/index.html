@@ -362,6 +362,19 @@ footer p{margin:8px 0 0}
 .dsf .dsf-go{flex:none;font-size:.8rem;font-weight:800;color:#141B3A;white-space:nowrap}
 @media (max-width:760px){.dsf .dsf-grid{grid-template-columns:1fr}.dsf{padding:20px 14px}.dsf .dsf-go{font-size:0}.dsf .dsf-go::after{content:'→';font-size:1.1rem;color:#B4651A}}
 @media (min-width:761px){.dsf .dsf-card{flex-direction:column;align-items:flex-start}.dsf .dsf-go{margin-top:6px}}
+
+/* 카드별 색 */
+.dsf .dsf-card{border-width:2px;border-left-width:6px}
+.dsf .dsf-card[data-dsf=werkorea]{background:linear-gradient(135deg,#EEF1FF,#fff 70%);border-color:#3B4BB8}
+.dsf .dsf-card[data-dsf=sangjocheck]{background:linear-gradient(135deg,#E8F7EE,#fff 70%);border-color:#1E8A55}
+.dsf .dsf-card[data-dsf=barodap]{background:linear-gradient(135deg,#E6F1FF,#fff 70%);border-color:#1F6FE0}
+.dsf .dsf-card[data-dsf=werkorea] .dsf-txt em{color:#3B4BB8}
+.dsf .dsf-card[data-dsf=sangjocheck] .dsf-txt em{color:#1E8A55}
+.dsf .dsf-card[data-dsf=barodap] .dsf-txt em{color:#1F6FE0}
+.dsf .dsf-go::after{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;color:#fff!important;font-size:1.05rem!important}
+.dsf .dsf-card[data-dsf=werkorea] .dsf-go::after{background:#3B4BB8}
+.dsf .dsf-card[data-dsf=sangjocheck] .dsf-go::after{background:#1E8A55}
+.dsf .dsf-card[data-dsf=barodap] .dsf-go::after{background:#1F6FE0}
 </style>
 </head>
 <body>
