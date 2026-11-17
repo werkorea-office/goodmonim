@@ -112,8 +112,7 @@ function pullBackup(done){
   if(ENTRY.fam) track("from_family",{});
   if(ENTRY.src==="card") track("open_card",{}); else if(ENTRY.src==="money") track("open_money",{});
 })();
-function familyHTML(){ return window.GM_FAMILY||''; }
-function bindFamily(){ app.querySelectorAll("[data-dsf]").forEach(function(el){ if(el._dsf) return; el._dsf=1; el.addEventListener("click",function(){ track("family_click",{}); }); }); }
+function bindFamily(){ var f=document.getElementById("family"); if(f && !f.firstChild && window.GM_FAMILY) f.innerHTML=window.GM_FAMILY; document.querySelectorAll("[data-dsf]").forEach(function(el){ if(el._dsf) return; el._dsf=1; el.addEventListener("click",function(){ track("family_click",{}); }); }); }
 function track(type,extra){
   if(PREVIEW) return;
   try{ var body=JSON.stringify(Object.assign({type:type,device:S.device,gen:S.gen||null,day:TODAY},extra||{}));
@@ -212,7 +211,7 @@ function renderGen(){
   h+='</div><div class="growrow" aria-label="나무가 자라는 모습">'+[0,1,4,6].map(function(k){ return '<figure>'+treeSVG(k)+'<figcaption>'+STAGES[k].ko+'</figcaption></figure>'; }).join('')+'</div></div>';
   h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">고른 세대의 리그에 함께 들어갑니다. 이름과 정확한 나이는 묻지 않습니다.</p><div class="gens">';
   GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(GEN_KO[g])+'<small>'+esc(g)+'</small></strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
-  app.innerHTML=h+'</div>'+familyHTML();
+  app.innerHTML=h+'</div>';
   bindFamily();
   app.querySelectorAll(".gen").forEach(function(b){ b.addEventListener("click",function(){ S.gen=b.getAttribute("data-gen"); save(); pushBackup(); run={i:0,picks:[],answered:false}; renderQuiz(); window.scrollTo(0,0); }); });
 }
@@ -325,7 +324,6 @@ function renderResult(){
 
   h+='<div class="section-title c-log"><h2>나의 두뇌 기록</h2><span>My Brain Log</span></div><div class="panel c-log"><div class="week">'+weekHTML()+'</div><div class="skills">'+skillsHTML()+'</div><p class="note">이 기기에 쌓인 내 기록입니다. 푼 날이 늘수록 분야별 정답률이 정확해집니다.</p></div>';
   h+='<div class="section-title c-league"><h2>오늘의 리그 대항전</h2><span>League Match</span></div><div id="rankBox"><div class="pending">오늘의 집계를 불러오는 중입니다.</div></div>';
-  h+=familyHTML();
 
 
   h+='<div class="section-title c-share"><h2>공유 카드</h2><span>Share &amp; invite</span></div>';
