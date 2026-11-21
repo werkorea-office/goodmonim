@@ -112,7 +112,7 @@ function pullBackup(done){
   if(ENTRY.fam) track("from_family",{});
   if(ENTRY.src==="card") track("open_card",{}); else if(ENTRY.src==="money") track("open_money",{});
 })();
-function bindFamily(){ var f=document.getElementById("family"); if(f && !f.firstChild && window.GM_FAMILY) f.innerHTML=window.GM_FAMILY; document.querySelectorAll("[data-dsf]").forEach(function(el){ if(el._dsf) return; el._dsf=1; el.addEventListener("click",function(){ track("family_click",{}); }); }); }
+function bindFamily(show){ var f=document.getElementById("family"); if(f) f.innerHTML=(show&&window.GM_FAMILY)||""; document.querySelectorAll("[data-dsf]").forEach(function(el){ if(el._dsf) return; el._dsf=1; el.addEventListener("click",function(){ track("family_click",{}); }); }); }
 function track(type,extra){
   if(PREVIEW) return;
   try{ var body=JSON.stringify(Object.assign({type:type,device:S.device,gen:S.gen||null,day:TODAY},extra||{}));
@@ -212,7 +212,7 @@ function renderGen(){
   h+='<div class="section-title"><h2>어느 세대로 참여하시겠어요?</h2><span>Choose your generation</span></div><p class="lead">고른 세대의 리그에 함께 들어갑니다. 이름과 정확한 나이는 묻지 않습니다.</p><div class="gens">';
   GENS.forEach(function(g){ h+='<button class="gen" type="button" data-gen="'+esc(g)+'"><strong>'+esc(GEN_KO[g])+'<small>'+esc(g)+'</small></strong><em>'+esc(GEN_EN[g])+'</em></button>'; });
   app.innerHTML=h+'</div>';
-  bindFamily();
+  bindFamily(false);
   app.querySelectorAll(".gen").forEach(function(b){ b.addEventListener("click",function(){ S.gen=b.getAttribute("data-gen"); save(); pushBackup(); run={i:0,picks:[],answered:false}; renderQuiz(); window.scrollTo(0,0); }); });
 }
 
@@ -336,7 +336,7 @@ function renderResult(){
     h+='<div class="section-title"><h2>미리보기 도구</h2><span>Preview</span></div><div class="sim"><button type="button" data-sim="ok">어제까지 22일 연속</button><button type="button" data-sim="shield">하루 빠짐 · 보호막 있음</button><button type="button" data-sim="grace">이틀 빠짐 · 보호막 없음</button><button type="button" data-sim="broken">사흘 빠짐 · 기록 끊김</button></div><button class="ghost" type="button" id="againBtn">오늘 문제 다시 풀기</button>';
   }
   h+='<button class="ghost" type="button" id="genBtn">내일부터 세대 바꾸기</button>';
-  app.innerHTML=h; bindFamily();
+  app.innerHTML=h; bindFamily(true);
   var ti=document.getElementById("tmInstall"); if(ti&&window.GM_openInstall) ti.addEventListener("click",window.GM_openInstall);
   if(window.GM_bindPush) window.GM_bindPush();
   if(window.GM_tmTimer) clearInterval(window.GM_tmTimer); window.GM_tmTimer=setInterval(function(){ var c=document.getElementById("tmCount"); if(c) c.textContent=untilMidnight(); },30000);
